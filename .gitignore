@@ -9,3 +9,7 @@
 *.aux
 *.log
 *.pdf
+
+# Graffle Files"
+
+graffle/
