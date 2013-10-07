@@ -1,5 +1,6 @@
 package org.gambi.tapestry5.cli;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
 
 import javax.validation.MessageInterpolator;
@@ -7,6 +8,7 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import javax.validation.groups.Default;
 
+import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.tapestry5.beanvalidator.BeanValidatorConfigurer;
 import org.apache.tapestry5.beanvalidator.BeanValidatorGroupSource;
@@ -15,13 +17,18 @@ import org.apache.tapestry5.internal.beanvalidator.BeanValidationGroupSourceImpl
 import org.apache.tapestry5.internal.beanvalidator.BeanValidatorSourceImpl;
 import org.apache.tapestry5.internal.beanvalidator.MessageInterpolatorImpl;
 import org.apache.tapestry5.ioc.Configuration;
-import org.apache.tapestry5.ioc.Messages;
+import org.apache.tapestry5.ioc.MethodAdviceReceiver;
 import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
+import org.apache.tapestry5.ioc.annotations.Advise;
 import org.apache.tapestry5.ioc.services.PropertyShadowBuilder;
 import org.apache.tapestry5.ioc.services.ThreadLocale;
+import org.apache.tapestry5.plastic.MethodAdvice;
+import org.apache.tapestry5.plastic.MethodInvocation;
+import org.gambi.tapestry5.cli.services.ApplicationConfiguration;
 import org.gambi.tapestry5.cli.services.ApplicationConfigurationSource;
 import org.gambi.tapestry5.cli.services.CLIParser;
+import org.gambi.tapestry5.cli.services.impl.ApplicationConfigurationSourceImpl;
 import org.gambi.tapestry5.cli.services.impl.CLIParserImpl;
 import org.slf4j.Logger;
 
@@ -76,6 +83,8 @@ public class CLIModule {
 		binder.bind(BeanValidatorGroupSource.class,
 				BeanValidationGroupSourceImpl.class);
 		binder.bind(BeanValidatorSource.class, BeanValidatorSourceImpl.class);
+		binder.bind(ApplicationConfigurationSource.class,
+				ApplicationConfigurationSourceImpl.class);
 	}
 
 	/*
@@ -123,7 +132,9 @@ public class CLIModule {
 	 */
 	public CLIParser buildCLIParser(
 	// Resources
-			Logger logger, Messages messages,
+			Logger logger,
+			// Apparently this cannot be injected so easily !
+			// Messages messages,
 			// Distributed Configurations
 			Collection<Option> options,
 			// Services
@@ -135,5 +146,40 @@ public class CLIModule {
 		return new CLIParserImpl(logger, options,
 				applicationConfigurationSource, validator);
 	}
+
+	@Advise(id = "ApplicationConfigurationSource")
+	public void setPropertyValues(MethodAdviceReceiver receiver) {
+
+		MethodAdvice advice = new MethodAdvice() {
+
+			public void advise(MethodInvocation invocation) {
+				CommandLine input = (CommandLine) invocation.getParameter(0);
+				// Create the new instance of the ApplicationConfiguration
+				System.out.println("Input " + input);
+				// Object
+				invocation.proceed();
+				ApplicationConfiguration app = (ApplicationConfiguration) invocation
+						.getReturnValue();
+
+				for (Object p : app.getAllProperties()) {
+					System.out.println("CLIModule.setPropertyValues() " + p);
+
+				}
+			}
+		};
+
+		// Advice only the actuate method
+		System.out.println("\t\t ServiceUpdater: Receiver interface: "
+				+ receiver.getInterface().getName());
+
+		for (Method m : receiver.getInterface().getMethods()) {
+			if ("get".equals(m.getName())) {
+
+				System.out.println("\t\t Advise " + m.getName() + " of  "
+						+ receiver.getInterface().getName());
+				receiver.adviseMethod(m, advice);
+			}
+		}
+	};
 
 }

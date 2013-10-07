@@ -4,7 +4,6 @@ import org.apache.commons.cli.CommandLine;
 
 public interface ApplicationConfigurationSource {
 
-	public ApplicationConfiguration get(Class<ApplicationConfiguration> clazz,
-			CommandLine parsedOptions);
+	public ApplicationConfiguration get(CommandLine parsedOptions);
 
 }
