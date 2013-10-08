@@ -1,6 +1,5 @@
 package org.gambi.tapestry5.cli;
 
-import java.lang.reflect.Method;
 import java.util.Collection;
 
 import javax.validation.MessageInterpolator;
@@ -8,7 +7,6 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import javax.validation.groups.Default;
 
-import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.tapestry5.beanvalidator.BeanValidatorConfigurer;
 import org.apache.tapestry5.beanvalidator.BeanValidatorGroupSource;
@@ -17,15 +15,11 @@ import org.apache.tapestry5.internal.beanvalidator.BeanValidationGroupSourceImpl
 import org.apache.tapestry5.internal.beanvalidator.BeanValidatorSourceImpl;
 import org.apache.tapestry5.internal.beanvalidator.MessageInterpolatorImpl;
 import org.apache.tapestry5.ioc.Configuration;
-import org.apache.tapestry5.ioc.MethodAdviceReceiver;
+import org.apache.tapestry5.ioc.Messages;
 import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
-import org.apache.tapestry5.ioc.annotations.Advise;
 import org.apache.tapestry5.ioc.services.PropertyShadowBuilder;
 import org.apache.tapestry5.ioc.services.ThreadLocale;
-import org.apache.tapestry5.plastic.MethodAdvice;
-import org.apache.tapestry5.plastic.MethodInvocation;
-import org.gambi.tapestry5.cli.data.ApplicationConfiguration;
 import org.gambi.tapestry5.cli.services.ApplicationConfigurationSource;
 import org.gambi.tapestry5.cli.services.CLIParser;
 import org.gambi.tapestry5.cli.services.impl.ApplicationConfigurationSourceImpl;
@@ -90,6 +84,8 @@ public class CLIModule {
 	/*
 	 * Build the validator service
 	 */
+	// TODO Look at Taha's solution for building a Validator where we can also
+	// inject T5 services and managed objects
 	public static Validator buildBeanValidator(
 			ValidatorFactory validatorFactory,
 			// Che e' il Prop Shadow Builder ?!!
@@ -133,15 +129,16 @@ public class CLIModule {
 	public CLIParser buildCLIParser(
 	// Resources
 			Logger logger,
-			// Apparently this cannot be injected so easily !
+			// FIXME Apparently this cannot be injected so easily !
 			// Messages messages,
-			// Distributed Configurations
-			Collection<Option> options,
 			// Services
 			ApplicationConfigurationSource applicationConfigurationSource,
-			// TODO Now this is the JSR303 validator, but shouldn't we use the
-			// T5 validator (which eventually contains the JSR one?)
-			Validator validator) {
+			// JSR 303 BeanValidator. TODO Shall we inject the TapestryValidator
+			// instead?
+			Validator validator,
+			//
+			// Collected the Distributed Configurations
+			Collection<Option> options) {
 
 		return new CLIParserImpl(logger, options,
 				applicationConfigurationSource, validator);
