@@ -14,6 +14,21 @@
 		</contributor>
 	</contributors>
 
+	<distributionManagement>
+		<repository>
+			<id>infosys-repo</id>
+			<name>infosys-repo</name>
+			<uniqueVersion>false</uniqueVersion>
+			<url>scp://128.131.172.98/web/website/mvn</url>
+		</repository>
+		<snapshotRepository>
+			<id>infosys-repo</id>
+			<name>infosys-repo</name>
+			<url>scp://128.131.172.98/web/website/mvn</url>
+			<uniqueVersion>false</uniqueVersion>
+		</snapshotRepository>
+	</distributionManagement>
+
 	<dependencies>
 
 		<!-- Implementation of CLI parsing -->
@@ -55,6 +70,13 @@
 	</dependencies>
 
 	<build>
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ssh</artifactId>
+				<version>1.0-beta-6</version>
+			</extension>
+		</extensions>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -77,8 +99,6 @@
 					</archive>
 				</configuration>
 			</plugin>
-
-
 
 		</plugins>
 	</build>
