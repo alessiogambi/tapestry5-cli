@@ -36,22 +36,48 @@ public class ApplicationConfigurationSourceImpl implements
 		this.beans = beans;
 	}
 
+	// TODO This should be improved !
+	private String escapePropertyName(String propertyName) {
+		String _pName = propertyName.trim().replaceAll("--", "-");
+		StringBuilder sb = new StringBuilder();
+		boolean capitalizeNext = false;
+		for (char c : _pName.toCharArray()) {
+			if (c == '-') {
+				capitalizeNext = true;
+			} else {
+				if (capitalizeNext) {
+					sb.append(Character.toUpperCase(c));
+					capitalizeNext = false;
+				} else {
+					sb.append(c);
+				}
+			}
+		}
+		return sb.toString();
+	}
+
 	private void evaluateTheBean(CommandLine parsedOptions, Object bean)
 			throws IllegalAccessException, InvocationTargetException,
 			NoSuchMethodException, ValidationException {
 		// Fill the matching props of the Bean
 		Map properties = PropertyUtils.describe(bean);
 		for (Option option : parsedOptions.getOptions()) {
-			String propertyName = option.getLongOpt();
-			System.out.println("propertyName " + propertyName);
+
+			String propertyName = escapePropertyName(option.getLongOpt());
+
+			// This must be transformed the proper way !!
+			// dash char - is not valid for variable/method names !
+			// Either use _ instead or the camel notation
+			// alpha-beta will become alphaBeta
+
+			logger.debug("propertyName " + propertyName);
 			if (properties.containsKey(propertyName)) {
-				System.out.println("The bean contains the property "
-						+ propertyName + ". Set its value ");
+				logger.debug("The bean contains the property " + propertyName
+						+ ". Set its value ");
 
 				PropertyDescriptor descriptor = PropertyUtils
 						.getPropertyDescriptor(bean, propertyName);
-				System.out.println("PropertyType "
-						+ descriptor.getPropertyType());
+				logger.debug("PropertyType " + descriptor.getPropertyType());
 
 				Object value = typeCoercer.coerce(option.getValue(),
 						descriptor.getPropertyType());
@@ -59,7 +85,7 @@ public class ApplicationConfigurationSourceImpl implements
 				PropertyUtils.setProperty(bean, propertyName, value);
 
 			} else {
-				System.out.println("The bean does not contains the property "
+				logger.debug("The bean does not contains the property "
 						+ propertyName);
 			}
 		}

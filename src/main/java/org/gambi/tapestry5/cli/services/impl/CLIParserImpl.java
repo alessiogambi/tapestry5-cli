@@ -56,7 +56,8 @@ public class CLIParserImpl implements CLIParser {
 		this.applicationConfigurationSource = applicationBeanSource;
 	}
 
-	public void parse(String[] args) throws ParseException, ValidationException {
+	public ApplicationConfiguration parse(String[] args) throws ParseException,
+			ValidationException {
 		logger.debug("Parsing " + Arrays.toString(args));
 		ApplicationConfiguration application = null;
 		try {
@@ -120,5 +121,7 @@ public class CLIParserImpl implements CLIParser {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
+		return application;
 	}
 }

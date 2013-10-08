@@ -15,7 +15,6 @@ import org.apache.tapestry5.internal.beanvalidator.BeanValidationGroupSourceImpl
 import org.apache.tapestry5.internal.beanvalidator.BeanValidatorSourceImpl;
 import org.apache.tapestry5.internal.beanvalidator.MessageInterpolatorImpl;
 import org.apache.tapestry5.ioc.Configuration;
-import org.apache.tapestry5.ioc.Messages;
 import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
 import org.apache.tapestry5.ioc.services.PropertyShadowBuilder;
