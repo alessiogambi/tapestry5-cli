@@ -15,7 +15,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.gambi.tapestry5.cli.services.ApplicationConfiguration;
+import org.gambi.tapestry5.cli.data.ApplicationConfiguration;
 import org.gambi.tapestry5.cli.services.ApplicationConfigurationSource;
 import org.gambi.tapestry5.cli.services.CLIParser;
 import org.slf4j.Logger;
@@ -93,7 +93,7 @@ public class CLIParserImpl implements CLIParser {
 			}
 
 			if (!isValid) {
-				throw new ValidationException("Input Violation detected");
+				throw new ValidationException("The provided input is not valid");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

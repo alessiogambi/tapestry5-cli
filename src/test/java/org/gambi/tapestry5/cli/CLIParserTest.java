@@ -1,7 +1,5 @@
 package org.gambi.tapestry5.cli;
 
-import java.util.Arrays;
-
 import javax.validation.ValidationException;
 
 import org.apache.commons.cli.ParseException;
@@ -62,19 +60,18 @@ public class CLIParserTest {
 	@Test
 	public void parse() {
 		CLIParser parser = registry.getService(CLIParser.class);
-		String[] args = new String[] { "-a", "10", "--beta", "7", "-g",
+		String[] args = new String[] { "-a", "10", "--beta", "7axc", "-g",
 				"the gamma input", "first-arg", "second-args", "whaterver" };
 
 		try {
 			parser.parse(args);
 		} catch (Exception e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 			Assert.fail();
 		}
 
 		SymbolSource symbolSource = registry.getService(SymbolSource.class);
-		Assert.assertEquals("10",
-				symbolSource.valueForSymbol("args:alfa-option"));
+		Assert.assertEquals("10", symbolSource.valueForSymbol("args:alfa"));
 	}
 
 	@Test
@@ -86,10 +83,10 @@ public class CLIParserTest {
 		try {
 			parser.parse(args);
 		} catch (ValidationException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
+			return;
 		} catch (Exception e) {
-			e.printStackTrace();
-			Assert.fail();
+			Assert.fail("Wrong exception " + e.getMessage());
 		}
 		Assert.fail("Validation Exception not raised");
 	}

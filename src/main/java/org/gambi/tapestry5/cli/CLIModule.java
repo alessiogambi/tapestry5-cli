@@ -25,7 +25,7 @@ import org.apache.tapestry5.ioc.services.PropertyShadowBuilder;
 import org.apache.tapestry5.ioc.services.ThreadLocale;
 import org.apache.tapestry5.plastic.MethodAdvice;
 import org.apache.tapestry5.plastic.MethodInvocation;
-import org.gambi.tapestry5.cli.services.ApplicationConfiguration;
+import org.gambi.tapestry5.cli.data.ApplicationConfiguration;
 import org.gambi.tapestry5.cli.services.ApplicationConfigurationSource;
 import org.gambi.tapestry5.cli.services.CLIParser;
 import org.gambi.tapestry5.cli.services.impl.ApplicationConfigurationSourceImpl;
@@ -146,40 +146,5 @@ public class CLIModule {
 		return new CLIParserImpl(logger, options,
 				applicationConfigurationSource, validator);
 	}
-
-	@Advise(id = "ApplicationConfigurationSource")
-	public void setPropertyValues(MethodAdviceReceiver receiver) {
-
-		MethodAdvice advice = new MethodAdvice() {
-
-			public void advise(MethodInvocation invocation) {
-				CommandLine input = (CommandLine) invocation.getParameter(0);
-				// Create the new instance of the ApplicationConfiguration
-				System.out.println("Input " + input);
-				// Object
-				invocation.proceed();
-				ApplicationConfiguration app = (ApplicationConfiguration) invocation
-						.getReturnValue();
-
-				for (Object p : app.getAllProperties()) {
-					System.out.println("CLIModule.setPropertyValues() " + p);
-
-				}
-			}
-		};
-
-		// Advice only the actuate method
-		System.out.println("\t\t ServiceUpdater: Receiver interface: "
-				+ receiver.getInterface().getName());
-
-		for (Method m : receiver.getInterface().getMethods()) {
-			if ("get".equals(m.getName())) {
-
-				System.out.println("\t\t Advise " + m.getName() + " of  "
-						+ receiver.getInterface().getName());
-				receiver.adviseMethod(m, advice);
-			}
-		}
-	};
 
 }

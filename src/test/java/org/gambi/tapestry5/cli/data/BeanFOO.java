@@ -4,6 +4,9 @@ import javax.validation.constraints.Min;
 
 public class BeanFOO {
 
+	public BeanFOO() {
+	}
+
 	@Min(value = 10)
 	private int alfa;
 

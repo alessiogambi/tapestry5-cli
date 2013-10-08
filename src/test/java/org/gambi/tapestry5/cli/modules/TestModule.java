@@ -25,13 +25,9 @@ public class TestModule {
 	// }
 
 	public void contributeCLIParser(Configuration<Option> configuration) {
-		configuration.add(new Option("a", "alfa-option", true,
-				"alfa-description"));
-
+		configuration.add(new Option("a", "alfa", true, "alfa-description"));
 		configuration.add(new Option("b", "beta", true, "beta-description"));
-
-		configuration.add(new Option("g", "this-is-gamma", true,
-				"This is gamma"));
+		configuration.add(new Option("g", "gamma", true, "This is gamma"));
 	}
 
 	public void contributeApplicationConfigurationSource(

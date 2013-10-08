@@ -5,7 +5,10 @@ import javax.validation.constraints.Size;
 
 public class BeanA {
 
-	@Size(min = 3, max = 5)
+	public BeanA() {
+	}
+
+	@Size(min = 3, max = 5, message = "Legnth of beta Must be between 3 and 5")
 	private String beta;
 
 	@NotNull
