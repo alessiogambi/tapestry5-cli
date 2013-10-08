@@ -16,7 +16,8 @@ target
 # Latex Output Files #
 *.aux
 *.log
-*.pdf
+main.pdf
+*.dvi
 
 # Graffle Files"
 
