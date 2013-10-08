@@ -23,6 +23,13 @@
 			<version>1.2</version>
 		</dependency>
 
+		<!-- Easy reflection on beans -->
+		<dependency>
+			<groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils</artifactId>
+			<version>1.8.3</version>
+		</dependency>
+
 		<!-- JUnit -->
 		<dependency>
 			<groupId>junit</groupId>
