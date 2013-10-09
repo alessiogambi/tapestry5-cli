@@ -1,12 +1,15 @@
 package org.gambi.tapestry5.cli.modules;
 
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
 import org.apache.tapestry5.ioc.Configuration;
 import org.apache.tapestry5.ioc.MappedConfiguration;
 import org.gambi.tapestry5.cli.data.BeanA;
 import org.gambi.tapestry5.cli.data.BeanFOO;
 import org.gambi.tapestry5.cli.data.BeanT5;
 import org.gambi.tapestry5.cli.data.BooleanBean;
+import org.gambi.tapestry5.cli.data.NestedBean;
+import org.gambi.tapestry5.cli.data.VectorBean;
 
 public class TestModule {
 
@@ -40,15 +43,20 @@ public class TestModule {
 		configuration.add(new Option("j", "jonny", false, "A boolean option"));
 		configuration.add(new Option("t", "tommy", false,
 				"Another boolean option"));
+
+		configuration.add(OptionBuilder.withArgName("vector")
+				.withLongOpt("vector").hasArgs(3).create("v"));
 	}
 
 	public void contributeApplicationConfigurationSource(
 			MappedConfiguration<String, Object> configuration) {
 
-		configuration.add("beanA", new BeanA());
-		configuration.add("beanFOO", new BeanFOO());
-		configuration.add("T5Bean", new BeanT5());
-		configuration.add("BooleanBean", new BooleanBean());
+		// configuration.add("beanA", new BeanA());
+		// configuration.add("beanFOO", new BeanFOO());
+		// configuration.add("T5Bean", new BeanT5());
+		// configuration.add("BooleanBean", new BooleanBean());
+		// configuration.add("VectorBean", new VectorBean());
+		configuration.add("NestedBean", new NestedBean());
 
 	}
 }

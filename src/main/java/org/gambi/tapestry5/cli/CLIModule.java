@@ -19,7 +19,6 @@ import org.apache.tapestry5.ioc.Configuration;
 import org.apache.tapestry5.ioc.ObjectLocator;
 import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
-import org.apache.tapestry5.ioc.annotations.Contribute;
 import org.apache.tapestry5.ioc.services.Coercion;
 import org.apache.tapestry5.ioc.services.CoercionTuple;
 import org.apache.tapestry5.ioc.services.PropertyShadowBuilder;
@@ -139,6 +138,32 @@ public class CLIModule {
 		};
 		configuration.add(new CoercionTuple<String, URL>(String.class,
 				URL.class, stringToURL));
+
+		Coercion<String, String[]> stringToStringArray = new Coercion<String, String[]>() {
+
+			public String[] coerce(String arg0) {
+				System.out.println("\n\n" + arg0);
+
+				String _stringarray = arg0;
+				_stringarray = _stringarray.trim();
+				if (_stringarray.startsWith("[")) {
+					_stringarray = _stringarray.replace("[", "");
+				}
+
+				if (_stringarray.endsWith("]")) {
+					_stringarray = _stringarray.substring(0,
+							_stringarray.length() - 1);
+				}
+				// NOTE THAT WE USE ', ' and not ','
+				for (String s : _stringarray.split(", ")) {
+					System.out.println(">>" + s + "<<");
+				}
+
+				return _stringarray.split(",");
+			}
+		};
+		configuration.add(new CoercionTuple<String, String[]>(String.class,
+				String[].class, stringToStringArray));
 
 	}
 

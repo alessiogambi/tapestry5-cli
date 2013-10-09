@@ -134,7 +134,6 @@ public class CLIParserImpl implements CLIParser {
 
 			symbolName = null;
 			symbolValue = null;
-			// TODO We cannot deal with String[] as inputs for the options !
 			for (Option option : parsedOptions.getOptions()) {
 				symbolName = String.format("args:%s", option.getLongOpt());
 				symbolValue = "true";
@@ -142,6 +141,15 @@ public class CLIParserImpl implements CLIParser {
 				// Boolean options must be processed in a different way
 				if (!option.hasArg()) {
 					symbolValue = "true";
+				} else if (option.hasArgs()) {
+					// Arrays must be treated differently:
+					String[] values = new String[option.getArgs()];
+					System.arraycopy(option.getValues(), 0, values, 0,
+							option.getArgs());
+					// Transform back to String. This is necessary because the
+					// target property may not be a String[]
+					// This actually can be a coercion back to String ?
+					symbolValue = Arrays.toString(values);
 				} else {
 					symbolValue = option.getValue();
 				}

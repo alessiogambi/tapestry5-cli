@@ -3,6 +3,7 @@ package org.gambi.tapestry5.cli.services.impl;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -13,6 +14,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.tapestry5.ValidationException;
 import org.apache.tapestry5.ioc.services.TypeCoercer;
+import org.apache.tapestry5.ioc.util.UnknownValueException;
 import org.gambi.tapestry5.cli.data.ApplicationConfiguration;
 import org.gambi.tapestry5.cli.services.ApplicationConfigurationSource;
 import org.slf4j.Logger;
@@ -56,44 +58,123 @@ public class ApplicationConfigurationSourceImpl implements
 		return sb.toString();
 	}
 
+	private Option findOption(CommandLine parsedOptions, String propertyName) {
+		for (Option option : parsedOptions.getOptions()) {
+			String optionName = escapePropertyName(option.getLongOpt());
+			if (optionName.equals(propertyName)) {
+				return option;
+			}
+		}
+		return null;
+
+	}
+
+	private boolean optionPresent(CommandLine parsedOptions, String propertyName) {
+		return findOption(parsedOptions, propertyName) != null;
+	}
+
+	private void assignOption(CommandLine parsedOptions, String propertyName,
+			Object bean) throws IllegalAccessException,
+			InvocationTargetException, NoSuchMethodException {
+
+		Option option = findOption(parsedOptions, propertyName);
+		logger.debug("Assign " + option + " to " + propertyName);
+
+		PropertyDescriptor descriptor = PropertyUtils.getPropertyDescriptor(
+				bean, propertyName);
+		// Boolean options must be treated differently
+		Object value = null;
+		if (!option.hasArg()) {
+			logger.debug("Flag Option");
+			// This is a boolean option that is present
+			value = typeCoercer.coerce(new Boolean(true),
+					descriptor.getPropertyType());
+		} else if (option.hasArgs()) {
+			logger.debug("Multiple Arguments Options");
+			// Arrays must be treated differently:
+			String[] values = new String[option.getArgs()];
+			System.arraycopy(option.getValues(), 0, values, 0, option.getArgs());
+			// Transform back to String. This is necessary because the
+			// target property may not be a String[]
+			value = typeCoercer.coerce(Arrays.toString(values),
+					descriptor.getPropertyType());
+		} else {
+			logger.debug("Single Argument option");
+			value = typeCoercer.coerce(option.getValue(),
+					descriptor.getPropertyType());
+		}
+
+		PropertyUtils.setProperty(bean, propertyName, value);
+	}
+
 	private void evaluateTheBean(CommandLine parsedOptions, Object bean)
 			throws IllegalAccessException, InvocationTargetException,
 			NoSuchMethodException, ValidationException {
+
 		// Fill the matching props of the Bean
 		Map properties = PropertyUtils.describe(bean);
-		for (Option option : parsedOptions.getOptions()) {
 
-			String propertyName = escapePropertyName(option.getLongOpt());
-
-			// This must be transformed the proper way !!
-			// dash char - is not valid for variable/method names !
-			// Either use _ instead or the camel notation
-			// alpha-beta will become alphaBeta
+		for (Object _propName : properties.keySet()) {
+			String propertyName = (String) _propName;
 
 			logger.debug("propertyName " + propertyName);
-			if (properties.containsKey(propertyName)) {
 
-				PropertyDescriptor descriptor = PropertyUtils
-						.getPropertyDescriptor(bean, propertyName);
-				logger.debug("PropertyType " + descriptor.getPropertyType());
-
-				// Boolean options must be treated differently
-				Object value = null;
-				if (!option.hasArg()) {
-					// This is a boolean option that is present
-					value = typeCoercer.coerce(new Boolean(true),
-							descriptor.getPropertyType());
-				} else {
-					value = typeCoercer.coerce(option.getValue(),
-							descriptor.getPropertyType());
-				}
-				PropertyUtils.setProperty(bean, propertyName, value);
-				logger.debug("The bean contains the property " + propertyName
-						+ ". Set its value to " + value);
-
+			// Check if this is contained in the parsed Options
+			if (optionPresent(parsedOptions, propertyName)) {
+				logger.debug("The bean property (" + propertyName
+						+ ") was specified as input");
+				assignOption(parsedOptions, propertyName, bean);
 			} else {
-				logger.debug("The bean does not contains the property "
-						+ propertyName);
+				logger.debug("The property was not specified on the command line.");
+
+				// Access the property
+				PropertyDescriptor innerBean = PropertyUtils
+						.getPropertyDescriptor(bean, propertyName);
+
+				// Does it have a TypeCoercer from String to its' type ?
+
+				try {
+					typeCoercer.getCoercion(String.class,
+							innerBean.getPropertyType());
+					// If the object can be build from a string then it must be
+					// a property
+					logger.debug(propertyName
+							+ " is actually a real property that was SKIP by the user !");
+					return;
+				} catch (UnknownValueException uve) {
+					// Check if that is actually a bean or something else
+
+					// Try to go one step inside this and retry
+					Object newInnerBeanInstance = null;
+					try {
+						newInnerBeanInstance = ConstructorUtils
+								.invokeConstructor(innerBean.getPropertyType(),
+										new Object[0]);
+					} catch (NoSuchMethodException e) {
+						// If does not provide a no args constructor by
+						// definition its not a bean
+						logger.debug(propertyName + " is not a bean ! ");
+						return;
+					} catch (Exception e) {
+						logger.error("Generic error", e);
+						throw new RuntimeException(e);
+					}
+
+					logger.debug("Evaluating the inner bean " + propertyName);
+					// Here we are almost sure that this is a bean, therefore we
+					// make a recursive call and try to evaluate the inner bean
+					evaluateTheBean(parsedOptions, newInnerBeanInstance);
+
+					logger.debug("Setting the inner bean "
+							+ innerBean.getPropertyType());
+					// If everything went fine then this should be ok
+					PropertyUtils.setProperty(bean, propertyName,
+							newInnerBeanInstance);
+				} catch (Throwable e) {
+					// Temporary patch
+					logger.error("Exception ", e);
+					throw new RuntimeException(e);
+				}
 			}
 		}
 	}

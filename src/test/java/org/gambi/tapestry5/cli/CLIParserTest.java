@@ -1,6 +1,7 @@
 package org.gambi.tapestry5.cli;
 
 import java.net.MalformedURLException;
+import java.util.Arrays;
 
 import javax.validation.ValidationException;
 
@@ -90,7 +91,7 @@ public class CLIParserTest {
 		}
 	}
 
-	@Test
+	// @Test
 	public void booleanOption() throws MalformedURLException {
 		CLIParser parser = registry.getService(CLIParser.class);
 		String[] args = new String[] { "-a", "100", "--beta", "7xxs", "-g",
@@ -105,6 +106,29 @@ public class CLIParserTest {
 
 		SymbolSource symbolSource = registry.getService(SymbolSource.class);
 		Assert.assertEquals("false", symbolSource.valueForSymbol("args:tommy"));
+
+	}
+
+	@Test
+	public void vectorOption() throws MalformedURLException {
+		CLIParser parser = registry.getService(CLIParser.class);
+		String[] args = new String[] { "-a", "100", "--beta", "7xxs", "-g",
+				"gamma", "--epsilon", "12", "-d", "15", "first-arg", "-u",
+				"http://www.google.com", "-su", "http://www.bing.com", "-o",
+				"123", "--jonny", "-v", "1", "2", "blabl4", "second-args",
+				"whaterver" };
+		try {
+			parser.parse(args);
+		} catch (Exception e) {
+			Assert.fail("Exception " + e.getMessage());
+		}
+
+		SymbolSource symbolSource = registry.getService(SymbolSource.class);
+		Assert.assertNotNull(symbolSource.valueForSymbol("args:vector"));
+
+		String[] vector = new String[] { "1", "2", "blabl4" };
+		Assert.assertTrue(Arrays.toString(vector).equals(
+				symbolSource.valueForSymbol("args:vector")));
 
 	}
 
