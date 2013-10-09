@@ -128,9 +128,24 @@ With this information we identified some possible solutions to be evaluated:
  like a \lstJava{SymbolSource}. Parsing and validation are additional commands injected before this one.
  \lstJava{SymbolProvider}, 
 
-
 \subsection*{}
 
+\section{Features}
+
+\paragraph{Add Custom JSR 303 Validators} Adding custom validators that do not use any tapestry provided service works fine. 
+For example, we provide a basic \lstJava{@ValidURL} constraints that can be applied to any object.
+
+\paragraph{Add Custom JSR 303 Validators with Tapestry Injected objects} Also adding custom validators that use tapestry services is possible, provided that the injected object can be instantiated via the {\em autobuild()}. This is a contribution taken from Taha's blog.\footnote{\url{http://tawus.wordpress.com/2011/05/12/tapestry-magic-12-tapestry-ioc-aware-jsr-303-custom-validators/}}
+
+\section{Limitations, Issues, and Pitfalls}
+
+
+
+\paragraph{Using {\em native} Tapestry validators} At the moment the library cannot use any of the tapestry build-in, or contributed validators.
+Ideally, we want to mix-and-match JSR-303 validator with tapestry validators (defined via the @Validate annotation). For this, we may need to define a \lstJava{BeanValidatorConfigurer} that exports and use Tapestry Validator. Note that the validation framework at the moment is quite coupled with tapestry-core and the Web part of tapestry. 
+
+
+\paragraph{Why I do get a \lstJava{No validator could be found for type: java.net.URL}?} While developing we ended up to apply several validation constraints to basic types (e.g., String) that passed our tests. Then we defined new validators and changed the type of the variable. This is risky as not all the annotations can be applied to all the types. After some struggle we figured this out, so remember to check the compatibility of constraints with object types. In our case we applied \lstJava{@NotNull}, \lstJava{@NotEmpty} and \lstJava{@Pattern} to a String for checking if that was a valid URL.; Subsequently, we added a custom \lstJava{@ValidURL} to check that and removed the \lstJava{@Pattern} annotation, still we applied that to a String object and that was fine. Finally, as \lstJava{@ValidURL} targets URLs we changed the type of the object to \lstJava{java.net.URL} and then we got the exception. We blamed the custom validator first, and then we realized that we needed just to remove \lstJava{@NotEmpty} instead !
 
 \section{Conclusion}
 
