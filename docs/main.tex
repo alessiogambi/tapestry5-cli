@@ -137,9 +137,27 @@ For example, we provide a basic \lstJava{@ValidURL} constraints that can be appl
 
 \paragraph{Add Custom JSR 303 Validators with Tapestry Injected objects} Also adding custom validators that use tapestry services is possible, provided that the injected object can be instantiated via the {\em autobuild()}. This is a contribution taken from Taha's blog.\footnote{\url{http://tawus.wordpress.com/2011/05/12/tapestry-magic-12-tapestry-ioc-aware-jsr-303-custom-validators/}}
 
+\paragraph{Support for FLAG options} Flag options are boolean options with no arguments. They are treated as boolean options that are automagically initialized to the false value. If the flag is specified then its value is turned to true. This is required because symbols do not tolerate null values (not sure really)
+
+\paragraph{Support for Options with Multiple Arguments} Some options may receive several inputs. In this case, we capture all the parsed inputs and export a symbol with a string value that contains all of them (we follow the convention defined by Arrays.toString(String[] ))
+
+\paragraph{Contribute to SymbolSource} To realize the contribution we can adopt the following strategy:
+\begin{enumerate}
+\item We extend the CLIParser interface to output a Map<String, String> of symbols under the property "symbols" (i.e., via a getSymbol method)
+\item We use ShadowPropertyBuilder to expose the symbols property as a service
+\item We inject the symbols shadow property service inside the contributeSymbolSource method
+\item We implement an inner class that implements SymbolProvider and we use the symbols shadow property inside it
+\item We contribute the inner SymbolProvider to be invoked ``after:*"
+\end{enumerate}
+An alternative solution would be to directly build a CLISymbolProvider that receives the ShadowPropertyBuilder as input and repeats steps 2-5
+In the current implementation we adopt the latter solution.
+
+
 \section{Limitations, Issues, and Pitfalls}
+\paragraph{For the moment we do not build CLIParser with ChainBuilder}  because we need to capture all the steps into uniform commands, but each of them has different inputs/dependencies that we must consider properly.
 
-
+\paragraph{Define validation constraints on inputs and in general combine multiple inputs to be validated together} This can be done by define two levels of validation, similarly to client and server side (that in tapestry can be done by raising a validation exception inside components once the Validate* events are bubbled!): The first level is provided to validate basic properties with JSR 303, and the second level (only triggered if the first was ok) that use the collected Validators provided by the user to combine inputs (identified by position!) and parsed options.
+{\bf NOTE:} At the moment we provide only the scaffolding for creating a pipeline of validators, each stage consist of the application of a validator and a filter that accumulate validation constrains as the pipeline goes on.
 
 \paragraph{Using {\em native} Tapestry validators} At the moment the library cannot use any of the tapestry build-in, or contributed validators.
 Ideally, we want to mix-and-match JSR-303 validator with tapestry validators (defined via the @Validate annotation). For this, we may need to define a \lstJava{BeanValidatorConfigurer} that exports and use Tapestry Validator. Note that the validation framework at the moment is quite coupled with tapestry-core and the Web part of tapestry. 
