@@ -13,6 +13,7 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.tapestry5.ValidationException;
+import org.apache.tapestry5.internal.antlr.PropertyExpressionParser.constant_return;
 import org.apache.tapestry5.ioc.services.TypeCoercer;
 import org.apache.tapestry5.ioc.util.UnknownValueException;
 import org.gambi.tapestry5.cli.data.ApplicationConfiguration;
@@ -144,7 +145,7 @@ public class ApplicationConfigurationSourceImpl implements
 					// a property
 					logger.debug(propertyName
 							+ " is actually a real property that was SKIP by the user !");
-					return;
+					continue;
 				} catch (UnknownValueException uve) {
 					// Check if that is actually a bean or something else
 
@@ -158,7 +159,7 @@ public class ApplicationConfigurationSourceImpl implements
 						// If does not provide a no args constructor by
 						// definition its not a bean
 						logger.debug(propertyName + " is not a bean ! ");
-						return;
+						continue;
 					} catch (Exception e) {
 						logger.error("Generic error", e);
 						throw new RuntimeException(e);
