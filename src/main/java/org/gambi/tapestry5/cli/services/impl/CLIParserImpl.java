@@ -82,11 +82,14 @@ public class CLIParserImpl implements CLIParser {
 			boolean isValid = true;
 			for (Object property : application.getAllProperties()) {
 
-				Set<ConstraintViolation<Object>> result = validator
-						.validate(property);
+				Set<ConstraintViolation<Object>> result = validator.validate(property);
 				for (ConstraintViolation<Object> viol : result) {
 					System.out.println("CLIParserImpl.validate() : "
 							+ viol.getMessage());
+					System.out.println("CLIParserImpl.validate() : "
+							+ viol.getConstraintDescriptor());
+					System.out.println("CLIParserImpl.validate() : "
+							+ viol.getInvalidValue());
 				}
 				if (result.size() > 0) {
 					isValid = false;

@@ -1,5 +1,6 @@
 package org.gambi.tapestry5.cli;
 
+import java.net.URL;
 import java.util.Collection;
 
 import javax.validation.MessageInterpolator;
@@ -15,14 +16,19 @@ import org.apache.tapestry5.internal.beanvalidator.BeanValidationGroupSourceImpl
 import org.apache.tapestry5.internal.beanvalidator.BeanValidatorSourceImpl;
 import org.apache.tapestry5.internal.beanvalidator.MessageInterpolatorImpl;
 import org.apache.tapestry5.ioc.Configuration;
+import org.apache.tapestry5.ioc.ObjectLocator;
 import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
+import org.apache.tapestry5.ioc.annotations.Contribute;
+import org.apache.tapestry5.ioc.services.Coercion;
+import org.apache.tapestry5.ioc.services.CoercionTuple;
 import org.apache.tapestry5.ioc.services.PropertyShadowBuilder;
 import org.apache.tapestry5.ioc.services.ThreadLocale;
 import org.gambi.tapestry5.cli.services.ApplicationConfigurationSource;
 import org.gambi.tapestry5.cli.services.CLIParser;
 import org.gambi.tapestry5.cli.services.impl.ApplicationConfigurationSourceImpl;
 import org.gambi.tapestry5.cli.services.impl.CLIParserImpl;
+import org.gambi.tapestry5.cli.services.impl.TapestryConstraintValidatorFactory;
 import org.slf4j.Logger;
 
 /*
@@ -81,13 +87,12 @@ public class CLIModule {
 	}
 
 	/*
-	 * Build the validator service
+	 * TODO Need to Build the validator service. Taken from
+	 * http://tawus.wordpress.com/2011/05
+	 * /12/tapestry-magic-12-tapestry-ioc-aware-jsr-303-custom-validators/
 	 */
-	// TODO Look at Taha's solution for building a Validator where we can also
-	// inject T5 services and managed objects
 	public static Validator buildBeanValidator(
 			ValidatorFactory validatorFactory,
-			// Che e' il Prop Shadow Builder ?!!
 			PropertyShadowBuilder propertyShadowBuilder) {
 		return propertyShadowBuilder.build(validatorFactory, "validator",
 				Validator.class);
@@ -105,9 +110,42 @@ public class CLIModule {
 		configuration.add(Default.class);
 	}
 
+	@SuppressWarnings("rawtypes")
+	public static void contributeTypeCoercer(
+			Configuration<CoercionTuple> configuration) {
+		Coercion<URL, String> urlToString = new Coercion<URL, String>() {
+
+			public String coerce(URL arg0) {
+				if (arg0 == null) {
+					return null;
+				} else {
+					return arg0.toExternalForm();
+				}
+			}
+		};
+
+		configuration.add(new CoercionTuple<URL, String>(URL.class,
+				String.class, urlToString));
+
+		Coercion<String, URL> stringToURL = new Coercion<String, URL>() {
+
+			public URL coerce(String arg0) {
+				try {
+					return new URL(arg0);
+				} catch (Throwable e) {
+					return null;
+				}
+			}
+		};
+		configuration.add(new CoercionTuple<String, URL>(String.class,
+				URL.class, stringToURL));
+
+	}
+
 	public static void contributeBeanValidatorSource(
 			final OrderedConfiguration<BeanValidatorConfigurer> configuration,
-			final ThreadLocale threadLocale) {
+			final ThreadLocale threadLocale, final ObjectLocator locator) {
+
 		configuration.add("LocaleAwareMessageInterpolator",
 				new BeanValidatorConfigurer() {
 					public void configure(
@@ -118,6 +156,16 @@ public class CLIModule {
 						configuration
 								.messageInterpolator(new MessageInterpolatorImpl(
 										defaultInterpolator, threadLocale));
+					}
+				});
+
+		configuration.add("TapestryEnabledValidationConstraints",
+				new BeanValidatorConfigurer() {
+					public void configure(
+							javax.validation.Configuration<?> configuration) {
+						configuration
+								.constraintValidatorFactory(new TapestryConstraintValidatorFactory(
+										locator));
 					}
 				});
 	}

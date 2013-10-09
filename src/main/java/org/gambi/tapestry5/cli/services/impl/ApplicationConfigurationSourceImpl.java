@@ -72,8 +72,6 @@ public class ApplicationConfigurationSourceImpl implements
 
 			logger.debug("propertyName " + propertyName);
 			if (properties.containsKey(propertyName)) {
-				logger.debug("The bean contains the property " + propertyName
-						+ ". Set its value ");
 
 				PropertyDescriptor descriptor = PropertyUtils
 						.getPropertyDescriptor(bean, propertyName);
@@ -83,6 +81,8 @@ public class ApplicationConfigurationSourceImpl implements
 						descriptor.getPropertyType());
 
 				PropertyUtils.setProperty(bean, propertyName, value);
+				logger.debug("The bean contains the property " + propertyName
+						+ ". Set its value to " + value);
 
 			} else {
 				logger.debug("The bean does not contains the property "
