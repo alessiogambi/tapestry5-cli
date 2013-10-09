@@ -91,6 +91,24 @@ public class CLIParserTest {
 	}
 
 	@Test
+	public void booleanOption() throws MalformedURLException {
+		CLIParser parser = registry.getService(CLIParser.class);
+		String[] args = new String[] { "-a", "100", "--beta", "7xxs", "-g",
+				"gamma", "--epsilon", "12", "-d", "15", "first-arg", "-u",
+				"http://www.google.com", "-su", "http://www.bing.com", "-o",
+				"123", "--jonny", "second-args", "whaterver" };
+		try {
+			parser.parse(args);
+		} catch (Exception e) {
+			Assert.fail("Exception " + e.getMessage());
+		}
+
+		SymbolSource symbolSource = registry.getService(SymbolSource.class);
+		Assert.assertEquals("false", symbolSource.valueForSymbol("args:tommy"));
+
+	}
+
+	// @Test
 	public void validateStringUrl() throws MalformedURLException {
 		CLIParser parser = registry.getService(CLIParser.class);
 		String[] args = new String[] { "-a", "100", "--beta", "7xxs", "-g",

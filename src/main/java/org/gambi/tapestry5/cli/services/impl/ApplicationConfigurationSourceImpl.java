@@ -77,9 +77,16 @@ public class ApplicationConfigurationSourceImpl implements
 						.getPropertyDescriptor(bean, propertyName);
 				logger.debug("PropertyType " + descriptor.getPropertyType());
 
-				Object value = typeCoercer.coerce(option.getValue(),
-						descriptor.getPropertyType());
-
+				// Boolean options must be treated differently
+				Object value = null;
+				if (!option.hasArg()) {
+					// This is a boolean option that is present
+					value = typeCoercer.coerce(new Boolean(true),
+							descriptor.getPropertyType());
+				} else {
+					value = typeCoercer.coerce(option.getValue(),
+							descriptor.getPropertyType());
+				}
 				PropertyUtils.setProperty(bean, propertyName, value);
 				logger.debug("The bean contains the property " + propertyName
 						+ ". Set its value to " + value);

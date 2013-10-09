@@ -24,8 +24,7 @@ public class CLIParserImpl implements CLIParser {
 
 	private Logger logger;
 	// private Messages messages;
-
-	private Options configuration;
+	private Options options;
 
 	private ApplicationConfigurationSource applicationConfigurationSource;
 
@@ -41,16 +40,15 @@ public class CLIParserImpl implements CLIParser {
 			Logger logger,
 			// Messages messages, // Apparently this cannot be injected so
 			// easily
-			Collection<Option> _options,
+			Collection<Option> configuration,
 			ApplicationConfigurationSource applicationBeanSource,
 			Validator validator) {
 
 		this.logger = logger;
 		// this.messages = messages;
-
-		this.configuration = new Options();
-		for (Option option : _options) {
-			configuration.addOption(option);
+		this.options = new Options();
+		for (Option option : configuration) {
+			options.addOption(option);
 		}
 		this.validator = validator;
 		this.applicationConfigurationSource = applicationBeanSource;
@@ -63,7 +61,7 @@ public class CLIParserImpl implements CLIParser {
 		try {
 			parser = new BasicParser();
 			// Parse the input line
-			parsedOptions = parser.parse(configuration, args);
+			parsedOptions = parser.parse(options, args);
 			// Gives value to each property of the application bean object
 
 			// NOT SURE ABOUT THE FORM HERE...
@@ -73,7 +71,7 @@ public class CLIParserImpl implements CLIParser {
 			logger.error("Parsing failed.  Reason: " + exp.getMessage());
 
 			HelpFormatter formatter = new HelpFormatter();
-			formatter.printHelp("iter", configuration);
+			formatter.printHelp("iter", options);
 
 			throw exp;
 		}
@@ -82,7 +80,8 @@ public class CLIParserImpl implements CLIParser {
 			boolean isValid = true;
 			for (Object property : application.getAllProperties()) {
 
-				Set<ConstraintViolation<Object>> result = validator.validate(property);
+				Set<ConstraintViolation<Object>> result = validator
+						.validate(property);
 				for (ConstraintViolation<Object> viol : result) {
 					System.out.println("CLIParserImpl.validate() : "
 							+ viol.getMessage());
@@ -105,20 +104,63 @@ public class CLIParserImpl implements CLIParser {
 		}
 
 		try {
+			// Boolean options must be processed in a different way:
+			// We need to explicitly set the value of boolean properties, but
+			// false properties are simply not present on the CLI.
+			// so we default their value to false, and if they are actually
+			// present, their value will be tranformed later to true.
 
-			// For an easy use we export the options and the inputs as
-			// SystemProperties !
-			// Ideally we should get a reference to some SymbolProvider object
-			// to contribute... Or even, we should make CLIParse a
-			// SymbolProvider...
+			/*
+			 * TODO Here actually we need to use the ApplicationConfiguration
+			 * object... and also the Properties.Uils for the reflection For an
+			 * easy use we export the options and the inputs as SystemProperties
+			 * ! Ideally we should get a reference to some SymbolProvider object
+			 * to contribute... Or even, we should make CLIParse a
+			 * SymbolProvider...
+			 */
+			String symbolName;
+			String symbolValue;
+			for (Object _option : options.getOptions()) {
+				Option option = (Option) _option;
+				if (!option.hasArg()) {
+					symbolName = String.format("args:%s", option.getLongOpt());
+					symbolValue = "false";
+					System.out
+							.println("CLIParserImpl.parse(): Default setting "
+									+ symbolName + " == " + symbolValue);
+					System.getProperties().put(symbolName, symbolValue);
+				}
+			}
 
+			symbolName = null;
+			symbolValue = null;
 			// TODO We cannot deal with String[] as inputs for the options !
 			for (Option option : parsedOptions.getOptions()) {
-				String symbolName = String.format("args:%s",
-						option.getLongOpt());
-				String symbolValue = option.getValue();
+				symbolName = String.format("args:%s", option.getLongOpt());
+				symbolValue = "true";
+
+				// Boolean options must be processed in a different way
+				if (!option.hasArg()) {
+					symbolValue = "true";
+				} else {
+					symbolValue = option.getValue();
+				}
 				System.out.println("CLIParserImpl.parse(): Exporting "
 						+ symbolName + " == " + symbolValue);
+
+				System.getProperties().put(symbolName, symbolValue);
+			}
+
+			symbolName = null;
+			symbolValue = null;
+
+			// Export also the inputs ?
+			for (int i = 0; i < parsedOptions.getArgs().length; i++) {
+				symbolName = String.format("args:input[%d]", i);
+				symbolValue = parsedOptions.getArgs()[i];
+				System.out.println("CLIParserImpl.parse(): Exporting "
+						+ symbolName + " == " + symbolValue);
+
 				System.getProperties().put(symbolName, symbolValue);
 			}
 		} catch (Exception e) {

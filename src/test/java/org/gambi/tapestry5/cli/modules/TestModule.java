@@ -6,6 +6,7 @@ import org.apache.tapestry5.ioc.MappedConfiguration;
 import org.gambi.tapestry5.cli.data.BeanA;
 import org.gambi.tapestry5.cli.data.BeanFOO;
 import org.gambi.tapestry5.cli.data.BeanT5;
+import org.gambi.tapestry5.cli.data.BooleanBean;
 
 public class TestModule {
 
@@ -36,6 +37,9 @@ public class TestModule {
 		configuration.add(new Option("su", "string-url", true,
 				"An URL passed a STRING"));
 		configuration.add(new Option("u", "url", true, "An URL"));
+		configuration.add(new Option("j", "jonny", false, "A boolean option"));
+		configuration.add(new Option("t", "tommy", false,
+				"Another boolean option"));
 	}
 
 	public void contributeApplicationConfigurationSource(
@@ -44,6 +48,7 @@ public class TestModule {
 		configuration.add("beanA", new BeanA());
 		configuration.add("beanFOO", new BeanFOO());
 		configuration.add("T5Bean", new BeanT5());
+		configuration.add("BooleanBean", new BooleanBean());
 
 	}
 }
