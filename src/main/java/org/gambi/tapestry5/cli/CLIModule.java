@@ -2,6 +2,7 @@ package org.gambi.tapestry5.cli;
 
 import java.net.URL;
 import java.util.Collection;
+import java.util.Map;
 
 import javax.validation.MessageInterpolator;
 import javax.validation.Validator;
@@ -19,14 +20,18 @@ import org.apache.tapestry5.ioc.Configuration;
 import org.apache.tapestry5.ioc.ObjectLocator;
 import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
+import org.apache.tapestry5.ioc.annotations.InjectService;
 import org.apache.tapestry5.ioc.services.Coercion;
 import org.apache.tapestry5.ioc.services.CoercionTuple;
 import org.apache.tapestry5.ioc.services.PropertyShadowBuilder;
+import org.apache.tapestry5.ioc.services.SymbolProvider;
 import org.apache.tapestry5.ioc.services.ThreadLocale;
 import org.gambi.tapestry5.cli.services.ApplicationConfigurationSource;
 import org.gambi.tapestry5.cli.services.CLIParser;
+import org.gambi.tapestry5.cli.services.CLIValidator;
 import org.gambi.tapestry5.cli.services.impl.ApplicationConfigurationSourceImpl;
 import org.gambi.tapestry5.cli.services.impl.CLIParserImpl;
+import org.gambi.tapestry5.cli.services.impl.CLIValidatorImpl;
 import org.gambi.tapestry5.cli.services.impl.TapestryConstraintValidatorFactory;
 import org.slf4j.Logger;
 
@@ -83,6 +88,9 @@ public class CLIModule {
 		binder.bind(BeanValidatorSource.class, BeanValidatorSourceImpl.class);
 		binder.bind(ApplicationConfigurationSource.class,
 				ApplicationConfigurationSourceImpl.class);
+
+		// TODO
+		binder.bind(CLIValidator.class, CLIValidatorImpl.class);
 	}
 
 	/*
@@ -107,6 +115,30 @@ public class CLIModule {
 	public static void contributeBeanValidatorGroupSource(
 			final Configuration<Class> configuration) {
 		configuration.add(Default.class);
+	}
+
+	public static SymbolProvider buildCLISymbolProvider(CLIParser cliParser,
+			PropertyShadowBuilder propertyShadowBuilder) {
+
+		final Map<String, String> symbols = (Map<String, String>) propertyShadowBuilder
+				.build(cliParser, "symbols", Map.class);
+
+		return new SymbolProvider() {
+
+			public String valueForSymbol(String paramString) {
+				System.out
+						.println("CLIModule.contributeSymbolSource(...).new SymbolProvider() {...}.valueForSymbol() "
+								+ paramString);
+				return symbols.get(paramString);
+			}
+		};
+	}
+
+	public static void contributeSymbolSource(
+			OrderedConfiguration<SymbolProvider> configuration,
+			@InjectService("CLISymbolProvider") SymbolProvider cliSymbolProvider) {
+
+		configuration.add("CLISymbolProvider", cliSymbolProvider, "after:*");
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -154,12 +186,17 @@ public class CLIModule {
 					_stringarray = _stringarray.substring(0,
 							_stringarray.length() - 1);
 				}
+
 				// NOTE THAT WE USE ', ' and not ','
-				for (String s : _stringarray.split(", ")) {
-					System.out.println(">>" + s + "<<");
+				String[] tokens = _stringarray.split(", ");
+				String[] result = new String[tokens.length];
+
+				for (int i = 0; i < result.length; i++) {
+					// We need to escape back to the original form
+					result[i] = tokens[i].replaceAll("%2C", ",");
 				}
 
-				return _stringarray.split(",");
+				return result;
 			}
 		};
 		configuration.add(new CoercionTuple<String, String[]>(String.class,
@@ -208,12 +245,16 @@ public class CLIModule {
 			// JSR 303 BeanValidator. TODO Shall we inject the TapestryValidator
 			// instead?
 			Validator validator,
+			// THIS IS SPECIFIC TO CLI AND MAY USE JSR 303 VALIDATOR AD WELL. IT
+			// IS SUPPOSED TO VALIDATE COMPOSIZIONI AND COMPLEX CONSTRAINTS THAT
+			// CHECK COMBINATIONS OF INPUT/OPTIONS
+			CLIValidator cliValidator,
 			//
 			// Collected the Distributed Configurations
 			Collection<Option> options) {
 
 		return new CLIParserImpl(logger, options,
-				applicationConfigurationSource, validator);
+				applicationConfigurationSource, validator, cliValidator);
 	}
 
 }

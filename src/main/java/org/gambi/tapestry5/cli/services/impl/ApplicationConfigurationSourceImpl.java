@@ -91,9 +91,13 @@ public class ApplicationConfigurationSourceImpl implements
 					descriptor.getPropertyType());
 		} else if (option.hasArgs()) {
 			logger.debug("Multiple Arguments Options");
-			// Arrays must be treated differently:
-			String[] values = new String[option.getArgs()];
-			System.arraycopy(option.getValues(), 0, values, 0, option.getArgs());
+			char[][] values = new char[option.getArgs()][];
+
+			// We use this format to avoid failing in parsing ,
+			for (int i = 0; i < option.getArgs(); i++) {
+				values[i] = option.getValues()[i].toCharArray();
+			}
+
 			// Transform back to String. This is necessary because the
 			// target property may not be a String[]
 			value = typeCoercer.coerce(Arrays.toString(values),

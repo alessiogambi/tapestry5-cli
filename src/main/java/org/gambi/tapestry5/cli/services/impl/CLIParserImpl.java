@@ -2,6 +2,9 @@ package org.gambi.tapestry5.cli.services.impl;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.validation.ConstraintViolation;
@@ -18,31 +21,26 @@ import org.apache.commons.cli.ParseException;
 import org.gambi.tapestry5.cli.data.ApplicationConfiguration;
 import org.gambi.tapestry5.cli.services.ApplicationConfigurationSource;
 import org.gambi.tapestry5.cli.services.CLIParser;
+import org.gambi.tapestry5.cli.services.CLIValidator;
 import org.slf4j.Logger;
 
 public class CLIParserImpl implements CLIParser {
 
 	private Logger logger;
-	// private Messages messages;
 	private Options options;
-
 	private ApplicationConfigurationSource applicationConfigurationSource;
-
 	private Validator validator;
 
-	// Internal implementation via commons cli
+	private CLIValidator cliValidator;
+
 	private CommandLineParser parser;
 	private CommandLine parsedOptions;
 
-	// Not sure this is the most beautiful way
+	private Map<String, String> symbols;
 
-	public CLIParserImpl(
-			Logger logger,
-			// Messages messages, // Apparently this cannot be injected so
-			// easily
-			Collection<Option> configuration,
+	public CLIParserImpl(Logger logger, Collection<Option> configuration,
 			ApplicationConfigurationSource applicationBeanSource,
-			Validator validator) {
+			Validator validator, CLIValidator cliValidator) {
 
 		this.logger = logger;
 		// this.messages = messages;
@@ -51,21 +49,19 @@ public class CLIParserImpl implements CLIParser {
 			options.addOption(option);
 		}
 		this.validator = validator;
+		this.cliValidator = cliValidator;
 		this.applicationConfigurationSource = applicationBeanSource;
 	}
 
-	public ApplicationConfiguration parse(String[] args) throws ParseException,
-			ValidationException {
-		logger.debug("Parsing " + Arrays.toString(args));
-		ApplicationConfiguration application = null;
+	private ApplicationConfiguration parseTheInput(String[] args)
+			throws ParseException {
 		try {
+			logger.debug("Parsing " + Arrays.toString(args));
 			parser = new BasicParser();
 			// Parse the input line
 			parsedOptions = parser.parse(options, args);
 			// Gives value to each property of the application bean object
-
-			// NOT SURE ABOUT THE FORM HERE...
-			application = applicationConfigurationSource.get(parsedOptions);
+			return applicationConfigurationSource.get(parsedOptions);
 
 		} catch (ParseException exp) {
 			logger.error("Parsing failed.  Reason: " + exp.getMessage());
@@ -75,34 +71,61 @@ public class CLIParserImpl implements CLIParser {
 
 			throw exp;
 		}
+	}
 
+	private void validate(ApplicationConfiguration applicationConfiguration)
+			throws ValidationException {
+		boolean isValid = true;
 		try {
-			boolean isValid = true;
-			for (Object property : application.getAllProperties()) {
+			for (Object property : applicationConfiguration.getAllProperties()) {
 
 				Set<ConstraintViolation<Object>> result = validator
 						.validate(property);
 				for (ConstraintViolation<Object> viol : result) {
-					System.out.println("CLIParserImpl.validate() : "
+					logger.debug("CLIParserImpl.validate() : "
 							+ viol.getMessage());
-					System.out.println("CLIParserImpl.validate() : "
+					logger.debug("CLIParserImpl.validate() : "
 							+ viol.getConstraintDescriptor());
-					System.out.println("CLIParserImpl.validate() : "
+					logger.debug("CLIParserImpl.validate() : "
 							+ viol.getInvalidValue());
 				}
 				if (result.size() > 0) {
 					isValid = false;
 				}
 			}
-
-			if (!isValid) {
-				throw new ValidationException("The provided input is not valid");
-			}
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new ValidationException();
+			throw new ValidationException("Error during validation", e);
 		}
 
+		if (!isValid) {
+			throw new ValidationException(
+					"The provided command line input is not valid");
+		}
+	}
+
+	private void validate(Map<String, String> theSymbols)
+			throws ValidationException {
+		boolean isValid = true;
+
+		try {
+			List<String> result = cliValidator.validate(theSymbols);
+			for (String violation : result) {
+				logger.debug("CLIParserImpl.validate() : " + violation);
+			}
+			if (result.size() > 0) {
+				isValid = false;
+			}
+		} catch (Throwable e) {
+			throw new ValidationException("Error during validation", e);
+		}
+
+		if (!isValid) {
+			throw new ValidationException(
+					"The provided command line input is not valid");
+		}
+	}
+
+	private Map<String, String> prepareSymbols() {
 		try {
 			// Boolean options must be processed in a different way:
 			// We need to explicitly set the value of boolean properties, but
@@ -118,6 +141,9 @@ public class CLIParserImpl implements CLIParser {
 			 * to contribute... Or even, we should make CLIParse a
 			 * SymbolProvider...
 			 */
+
+			Map<String, String> theSymbols = new HashMap<String, String>();
+
 			String symbolName;
 			String symbolValue;
 			for (Object _option : options.getOptions()) {
@@ -125,10 +151,12 @@ public class CLIParserImpl implements CLIParser {
 				if (!option.hasArg()) {
 					symbolName = String.format("args:%s", option.getLongOpt());
 					symbolValue = "false";
-					System.out
-							.println("CLIParserImpl.parse(): Default setting "
-									+ symbolName + " == " + symbolValue);
-					System.getProperties().put(symbolName, symbolValue);
+
+					logger.debug("CLIParserImpl.parse(): Default setting "
+							+ symbolName + " == " + symbolValue);
+
+					theSymbols.put(symbolName, symbolValue);
+
 				}
 			}
 
@@ -153,10 +181,10 @@ public class CLIParserImpl implements CLIParser {
 				} else {
 					symbolValue = option.getValue();
 				}
-				System.out.println("CLIParserImpl.parse(): Exporting "
-						+ symbolName + " == " + symbolValue);
+				logger.debug("CLIParserImpl.parse(): Exporting " + symbolName
+						+ " == " + symbolValue);
 
-				System.getProperties().put(symbolName, symbolValue);
+				theSymbols.put(symbolName, symbolValue);
 			}
 
 			symbolName = null;
@@ -166,15 +194,35 @@ public class CLIParserImpl implements CLIParser {
 			for (int i = 0; i < parsedOptions.getArgs().length; i++) {
 				symbolName = String.format("args:input[%d]", i);
 				symbolValue = parsedOptions.getArgs()[i];
-				System.out.println("CLIParserImpl.parse(): Exporting "
-						+ symbolName + " == " + symbolValue);
+				logger.debug("CLIParserImpl.parse(): Exporting " + symbolName
+						+ " == " + symbolValue);
 
-				System.getProperties().put(symbolName, symbolValue);
+				theSymbols.put(symbolName, symbolValue);
 			}
+
+			return theSymbols;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Preparing Symbols", e);
+			throw new RuntimeException(e);
+
 		}
 
-		return application;
+	}
+
+	public void parse(String[] args) throws ParseException, ValidationException {
+
+		ApplicationConfiguration application = parseTheInput(args);
+
+		validate(application);
+
+		Map<String, String> theSymbols = prepareSymbols();
+
+		validate(theSymbols);
+
+		symbols = theSymbols;
+	}
+
+	public Map<String, String> getSymbols() {
+		return symbols;
 	}
 }
