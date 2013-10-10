@@ -1,7 +1,6 @@
 package org.gambi.tapestry5.cli;
 
 import java.net.MalformedURLException;
-import java.util.Arrays;
 
 import javax.validation.ValidationException;
 
@@ -41,6 +40,7 @@ public class CLIParserTest {
 	@After
 	public void shutdown() {
 		registry.shutdown();
+		System.out.println("CLIParserTest.shutdown()\n\n\n\n\n");
 	}
 
 	// @Test
@@ -113,23 +113,46 @@ public class CLIParserTest {
 	public void vectorOption() throws MalformedURLException {
 		CLIParser parser = registry.getService(CLIParser.class);
 		String[] args = new String[] { "-a", "100", "--beta", "7xxs", "-g",
+				"gamma", "--epsilon", "12", "-d", "15", "-u",
+				"http://www.google.com", "-su", "http://www.bing.com", "-o",
+				"123", "--jonny", "-v", "1", "2", "1", "13", "50" };
+		try {
+			parser.parse(args);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail("Exception " + e.getMessage());
+		}
+	}
+
+	// @Test
+	public void validateInputs() throws MalformedURLException {
+		CLIParser parser = registry.getService(CLIParser.class);
+		String[] args = new String[] { "-a", "100", "--beta", "7xxs", "-g",
 				"gamma", "--epsilon", "12", "-d", "15", "first-arg", "-u",
 				"http://www.google.com", "-su", "http://www.bing.com", "-o",
 				"123", "--jonny", "-v", "1", "2", "blabl4", "second-args",
 				"whaterver" };
 		try {
 			parser.parse(args);
+		} catch (ValidationException e) {
+
 		} catch (Exception e) {
+			e.printStackTrace();
 			Assert.fail("Exception " + e.getMessage());
 		}
 
-		SymbolSource symbolSource = registry.getService(SymbolSource.class);
-		Assert.assertNotNull(symbolSource.valueForSymbol("args:vector"));
+	}
 
-		String[] vector = new String[] { "1", "2", "blabl4" };
-		Assert.assertTrue(Arrays.toString(vector).equals(
-				symbolSource.valueForSymbol("args:vector")));
-
+	// @Test This will result in a System.exit() call that cannot be managed
+	// here !
+	public void printHelp() throws MalformedURLException {
+		CLIParser parser = registry.getService(CLIParser.class);
+		String[] args = new String[] { "-h" };
+		try {
+			parser.parse(args);
+		} catch (Exception e) {
+			Assert.fail("Exception " + e.getMessage());
+		}
 	}
 
 	// @Test

@@ -4,12 +4,13 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.tapestry5.ioc.Configuration;
 import org.apache.tapestry5.ioc.MappedConfiguration;
-import org.gambi.tapestry5.cli.data.BeanA;
-import org.gambi.tapestry5.cli.data.BeanFOO;
-import org.gambi.tapestry5.cli.data.BeanT5;
-import org.gambi.tapestry5.cli.data.BooleanBean;
+import org.apache.tapestry5.ioc.OrderedConfiguration;
+import org.apache.tapestry5.ioc.ServiceBinder;
+import org.apache.tapestry5.ioc.annotations.InjectService;
 import org.gambi.tapestry5.cli.data.NestedBean;
-import org.gambi.tapestry5.cli.data.VectorBean;
+import org.gambi.tapestry5.cli.services.CLIValidatorFilter;
+import org.gambi.tapestry5.cli.services.impl.SumValidator;
+import org.gambi.tapestry5.cli.utils.CLISymbolConstants;
 
 public class TestModule {
 
@@ -28,6 +29,22 @@ public class TestModule {
 	// .get("This is gamma")));
 	//
 	// }
+
+	public static void contributeApplicationDefaults(
+			MappedConfiguration<String, String> configuration) {
+
+		configuration.add(CLISymbolConstants.COMMAND_NAME, "test-cli");
+	}
+
+	public static void bind(final ServiceBinder binder) {
+		binder.bind(CLIValidatorFilter.class, SumValidator.class).withId("Sum");
+	}
+
+	public static void contributeCLIValidator(
+			OrderedConfiguration<CLIValidatorFilter> commands,
+			@InjectService("Sum") CLIValidatorFilter cliValidatorFilter) {
+		commands.add("SumInputs", cliValidatorFilter, "");
+	}
 
 	public void contributeCLIParser(Configuration<Option> configuration) {
 		configuration.add(new Option("a", "alfa", true, "alfa-description"));

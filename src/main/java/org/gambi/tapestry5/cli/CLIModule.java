@@ -2,7 +2,7 @@ package org.gambi.tapestry5.cli;
 
 import java.net.URL;
 import java.util.Collection;
-import java.util.Map;
+import java.util.List;
 
 import javax.validation.MessageInterpolator;
 import javax.validation.Validator;
@@ -21,18 +21,25 @@ import org.apache.tapestry5.ioc.ObjectLocator;
 import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
 import org.apache.tapestry5.ioc.annotations.InjectService;
+import org.apache.tapestry5.ioc.annotations.Symbol;
 import org.apache.tapestry5.ioc.services.Coercion;
 import org.apache.tapestry5.ioc.services.CoercionTuple;
+import org.apache.tapestry5.ioc.services.PipelineBuilder;
 import org.apache.tapestry5.ioc.services.PropertyShadowBuilder;
 import org.apache.tapestry5.ioc.services.SymbolProvider;
 import org.apache.tapestry5.ioc.services.ThreadLocale;
 import org.gambi.tapestry5.cli.services.ApplicationConfigurationSource;
 import org.gambi.tapestry5.cli.services.CLIParser;
 import org.gambi.tapestry5.cli.services.CLIValidator;
+import org.gambi.tapestry5.cli.services.CLIValidatorFilter;
+import org.gambi.tapestry5.cli.services.RuntimeSymbolProvider;
 import org.gambi.tapestry5.cli.services.impl.ApplicationConfigurationSourceImpl;
 import org.gambi.tapestry5.cli.services.impl.CLIParserImpl;
-import org.gambi.tapestry5.cli.services.impl.CLIValidatorImpl;
+import org.gambi.tapestry5.cli.services.impl.CLISymbolProvider;
+import org.gambi.tapestry5.cli.services.impl.DefaullCLIValidator;
 import org.gambi.tapestry5.cli.services.impl.TapestryConstraintValidatorFactory;
+import org.gambi.tapestry5.cli.utils.CLIDefaultOptions;
+import org.gambi.tapestry5.cli.utils.CLISymbolConstants;
 import org.slf4j.Logger;
 
 /*
@@ -89,8 +96,10 @@ public class CLIModule {
 		binder.bind(ApplicationConfigurationSource.class,
 				ApplicationConfigurationSourceImpl.class);
 
-		// TODO
-		binder.bind(CLIValidator.class, CLIValidatorImpl.class);
+		// STAGING
+		binder.bind(RuntimeSymbolProvider.class, CLISymbolProvider.class)
+				.withId("CLISymbolProvider");
+
 	}
 
 	/*
@@ -117,22 +126,43 @@ public class CLIModule {
 		configuration.add(Default.class);
 	}
 
-	public static SymbolProvider buildCLISymbolProvider(CLIParser cliParser,
-			PropertyShadowBuilder propertyShadowBuilder) {
+	/**
+	 */
 
-		final Map<String, String> symbols = (Map<String, String>) propertyShadowBuilder
-				.build(cliParser, "symbols", Map.class);
+	// SHould this be a PIPELINE instead ?
+	public static CLIValidator build(
+			@InjectService("PipelineBuilder") PipelineBuilder builder,
+			List<CLIValidatorFilter> configuration, Logger logger) {
 
-		return new SymbolProvider() {
+		// Terminators
+		CLIValidator terminator = new DefaullCLIValidator();
 
-			public String valueForSymbol(String paramString) {
-				System.out
-						.println("CLIModule.contributeSymbolSource(...).new SymbolProvider() {...}.valueForSymbol() "
-								+ paramString);
-				return symbols.get(paramString);
-			}
-		};
+		// build(Logger paramLogger, Class<S> paramClass, Class<F> paramClass1,
+		// List<F> paramList, S paramS);
+
+		return builder.build(logger, CLIValidator.class,
+				CLIValidatorFilter.class, configuration, terminator);
 	}
+
+	// binder.bind(CLIValidator.class, CLIValidatorImpl.class);
+
+	// public static SymbolProvider buildCLISymbolProvider(CLIParser cliParser,
+	// PropertyShadowBuilder propertyShadowBuilder) {
+	//
+	// final Map<String, String> symbols = (Map<String, String>)
+	// propertyShadowBuilder
+	// .build(cliParser, "symbols", Map.class);
+	//
+	// return new SymbolProvider() {
+	//
+	// public String valueForSymbol(String paramString) {
+	// System.out
+	// .println("CLIModule.contributeSymbolSource(...).new SymbolProvider() {...}.valueForSymbol() "
+	// + paramString);
+	// return symbols.get(paramString);
+	// }
+	// };
+	// }
 
 	public static void contributeSymbolSource(
 			OrderedConfiguration<SymbolProvider> configuration,
@@ -235,11 +265,17 @@ public class CLIModule {
 	/*
 	 * Build the CLI Parser object to process the input data
 	 */
+
+	public static void contributeCLIParser(Configuration<Option> configuration) {
+		configuration.add(CLIDefaultOptions.HELP_OPTION);
+	}
+
 	public CLIParser buildCLIParser(
 	// Resources
 			Logger logger,
 			// FIXME Apparently this cannot be injected so easily !
 			// Messages messages,
+			@Symbol(CLISymbolConstants.COMMAND_NAME) String commandName,
 			// Services
 			ApplicationConfigurationSource applicationConfigurationSource,
 			// JSR 303 BeanValidator. TODO Shall we inject the TapestryValidator
@@ -250,11 +286,14 @@ public class CLIModule {
 			// CHECK COMBINATIONS OF INPUT/OPTIONS
 			CLIValidator cliValidator,
 			//
+			RuntimeSymbolProvider runtimeSymbolProvider,
+			//
 			// Collected the Distributed Configurations
 			Collection<Option> options) {
 
-		return new CLIParserImpl(logger, options,
-				applicationConfigurationSource, validator, cliValidator);
+		return new CLIParserImpl(logger, commandName, options,
+				applicationConfigurationSource, validator, cliValidator,
+				runtimeSymbolProvider);
 	}
 
 }

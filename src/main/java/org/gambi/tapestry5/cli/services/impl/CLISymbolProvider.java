@@ -3,18 +3,14 @@ package org.gambi.tapestry5.cli.services.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.tapestry5.ioc.services.SymbolProvider;
+import org.gambi.tapestry5.cli.services.RuntimeSymbolProvider;
 
 /**
- * Ideally this must be contributed to SymbolSource via an injection, however
- * this must be "Instantiated" by the CLI Parser. One solution would be to let
- * the CLIParser to get the SymbolSource and provide CLIParser to the
- * contributeSymbolSource method. It feels really hacky in this way
  * 
  * @author alessiogambi
  * 
  */
-public class CLISymbolProvider implements SymbolProvider {
+public class CLISymbolProvider implements RuntimeSymbolProvider {
 
 	public Map<String, String> symbols;
 
@@ -33,5 +29,10 @@ public class CLISymbolProvider implements SymbolProvider {
 		} else {
 			symbols.put(symbolName, symbolValue);
 		}
+	}
+
+	public void addSymbols(Map<String, String> runtimeSymbols) {
+		symbols.putAll(runtimeSymbols);
+
 	}
 }

@@ -8,16 +8,17 @@ import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
-import org.gambi.tapestry5.cli.validators.URLValidator;
+import org.gambi.tapestry5.cli.validators.ComplexConstraintValidator;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
-@Constraint(validatedBy = URLValidator.class)
-public @interface ValidURL {
+@Target({ ElementType.TYPE, ElementType.ANNOTATION_TYPE })
+@Constraint(validatedBy = ComplexConstraintValidator.class)
+public @interface ComplexValidationConstraint {
 
-	public abstract String message() default "{org.gambi.tapestry5.cli.validators.ValidURL.message}";
+	public abstract String message() default "{org.gambi.tapestry5.cli.validators.ComplexValidationConstraint.message}";
 
 	public abstract Class<?>[] groups() default {};
 
 	Class<? extends Payload>[] payload() default {};
+
 }

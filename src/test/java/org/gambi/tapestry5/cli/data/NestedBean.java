@@ -3,6 +3,9 @@ package org.gambi.tapestry5.cli.data;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import org.gambi.tapestry5.cli.annotations.ComplexValidationConstraint;
+
+@ComplexValidationConstraint
 public class NestedBean {
 
 	// Force a cascade validation

@@ -1,5 +1,6 @@
 package org.gambi.tapestry5.cli.services.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -22,6 +23,8 @@ import org.gambi.tapestry5.cli.data.ApplicationConfiguration;
 import org.gambi.tapestry5.cli.services.ApplicationConfigurationSource;
 import org.gambi.tapestry5.cli.services.CLIParser;
 import org.gambi.tapestry5.cli.services.CLIValidator;
+import org.gambi.tapestry5.cli.services.RuntimeSymbolProvider;
+import org.gambi.tapestry5.cli.utils.CLIDefaultOptions;
 import org.slf4j.Logger;
 
 public class CLIParserImpl implements CLIParser {
@@ -33,17 +36,31 @@ public class CLIParserImpl implements CLIParser {
 
 	private CLIValidator cliValidator;
 
+	// TODO: ADDITIONAL CONF PARAMETER !true so
+	// it
+	// does not throw on unrecognized options
 	private CommandLineParser parser;
 	private CommandLine parsedOptions;
 
-	private Map<String, String> symbols;
+	private HelpFormatter formatter;
 
-	public CLIParserImpl(Logger logger, Collection<Option> configuration,
+	private RuntimeSymbolProvider runtimeSymbolProvider;
+
+	private String commandName;
+
+	public CLIParserImpl(
+			// Resources
+			Logger logger,
+			// Contributions
+			String commandName,
+			//
+			Collection<Option> configuration,
 			ApplicationConfigurationSource applicationBeanSource,
-			Validator validator, CLIValidator cliValidator) {
+			Validator validator, CLIValidator cliValidator,
+			//
+			RuntimeSymbolProvider runtimeSymbolProvider) {
 
 		this.logger = logger;
-		// this.messages = messages;
 		this.options = new Options();
 		for (Option option : configuration) {
 			options.addOption(option);
@@ -51,26 +68,20 @@ public class CLIParserImpl implements CLIParser {
 		this.validator = validator;
 		this.cliValidator = cliValidator;
 		this.applicationConfigurationSource = applicationBeanSource;
+
+		this.runtimeSymbolProvider = runtimeSymbolProvider;
+		this.commandName = commandName;
+		formatter = new HelpFormatter();
+		parser = new BasicParser();
 	}
 
 	private ApplicationConfiguration parseTheInput(String[] args)
 			throws ParseException {
-		try {
-			logger.debug("Parsing " + Arrays.toString(args));
-			parser = new BasicParser();
-			// Parse the input line
-			parsedOptions = parser.parse(options, args);
-			// Gives value to each property of the application bean object
-			return applicationConfigurationSource.get(parsedOptions);
-
-		} catch (ParseException exp) {
-			logger.error("Parsing failed.  Reason: " + exp.getMessage());
-
-			HelpFormatter formatter = new HelpFormatter();
-			formatter.printHelp("iter", options);
-
-			throw exp;
-		}
+		logger.debug("Parsing " + Arrays.toString(args));
+		// Parse the input line
+		parsedOptions = parser.parse(options, args);
+		// Gives value to each property of the application bean object
+		return applicationConfigurationSource.get(parsedOptions);
 	}
 
 	private void validate(ApplicationConfiguration applicationConfiguration)
@@ -103,14 +114,18 @@ public class CLIParserImpl implements CLIParser {
 		}
 	}
 
-	private void validate(Map<String, String> theSymbols)
+	private void validate(final Map<String, String> theSymbols)
 			throws ValidationException {
 		boolean isValid = true;
 
 		try {
-			List<String> result = cliValidator.validate(theSymbols);
+			List<String> result = new ArrayList<String>();
+
+			cliValidator.validate(theSymbols, result);
+
 			for (String violation : result) {
-				logger.debug("CLIParserImpl.validate() : " + violation);
+				logger.warn("CLIParserImpl.validate() Input Violation : "
+						+ violation);
 			}
 			if (result.size() > 0) {
 				isValid = false;
@@ -206,23 +221,67 @@ public class CLIParserImpl implements CLIParser {
 			throw new RuntimeException(e);
 
 		}
-
 	}
 
+	// FIXME Kind of bad !
+	private void prindUsageAndExit(String[] args) {
+		try {
+			// THIS IS TAKEN FROM
+			// http://stackoverflow.com/questions/14309467/how-can-i-avoid-a-parserexception-for-required-options-when-user-just-wants-to-p
+			final Options helpOptions = new Options();
+			helpOptions.addOption(CLIDefaultOptions.HELP_OPTION);
+			CommandLine tmpLine = parser.parse(helpOptions, args, true);
+			if (tmpLine.hasOption(CLIDefaultOptions.HELP_OPTION.getLongOpt())) {
+				formatter.printHelp(commandName, options);
+				// TODO !!
+				System.exit(0);
+			}
+		} catch (Exception e) {
+			logger.error("", e);
+			formatter.printHelp(commandName, options);
+			// TODO
+			System.exit(1);
+		}
+	}
+
+	// Maybe some useful message here as well
+	private void printAndReThrow(Throwable t) throws ParseException,
+			ValidationException {
+
+		if (t instanceof ParseException) {
+			// TODO Add some more info on error
+			formatter.printHelp(commandName, options);
+			throw (ParseException) t;
+		} else if (t instanceof ValidationException) {
+			// TODO Add some more info on error
+			formatter.printHelp(commandName, options);
+			throw (ValidationException) t;
+		} else {
+			// TODO Add some more info on error
+			formatter.printHelp(commandName, options);
+			// By default we wrap everything inside a ValidationException
+			throw new ValidationException(t);
+		}
+	}
+
+	// Maybe this should be a pipeline thing ?
 	public void parse(String[] args) throws ParseException, ValidationException {
 
-		ApplicationConfiguration application = parseTheInput(args);
+		// If --help is present then print usage and exit(0)
+		prindUsageAndExit(args);
 
-		validate(application);
+		try {
+			ApplicationConfiguration application = parseTheInput(args);
 
-		Map<String, String> theSymbols = prepareSymbols();
+			validate(application);
 
-		validate(theSymbols);
+			Map<String, String> theSymbols = prepareSymbols();
 
-		symbols = theSymbols;
-	}
+			validate(theSymbols);
 
-	public Map<String, String> getSymbols() {
-		return symbols;
+			runtimeSymbolProvider.addSymbols(theSymbols);
+		} catch (Exception e) {
+			printAndReThrow(e);
+		}
 	}
 }
