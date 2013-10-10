@@ -152,12 +152,24 @@ For example, we provide a basic \lstJava{@ValidURL} constraints that can be appl
 An alternative solution would be to directly build a CLISymbolProvider that receives the ShadowPropertyBuilder as input and repeats steps 2-5
 In the current implementation we adopt the latter solution.
 
+\paragraph{Provide a RuntimeSymbolProvider that extends SymbolProvider} After some tests we realized that having ShadowPropertyBuilder on symbols prevented the \tapcli to depend on Symbols. We then adopted this solution: Extend SymbolSource interface to RuntimeSymbolSource, implement a basic implementation of it, inject RuntimeSymbolSource inside CLIParser and contribute RuntimeSymbolSource, as plain SymbolSource, to SymbolProvider.
+
+\paragraph{Validation of combinations of option values} Validations that cross-cut different options are possible by defining Class-level constraints annotations and validators following JSR303. This will result into validators applied to multiple fields of beans. Nesting options are possible but this requires the explicit definition of the ApplicationBeans and relative validators. Note that validators are not directly contributed to the registry, they are used by the JSR 303 because annotations/validators are on the classpath.
+
+\paragraph{Define validation constraints on inputs and in general combine multiple inputs to be validated together} Another way to validate complex conditions on inputs can be done by contributing validators (Actually CLIValidatorFilters at the moment).
+Those will be triggered {\bf after} the bean validation and will access the parsed input lines (as Map<String,String>).
+We adopt this two-leveled validation because is similar to client and server side (that in tapestry can be done by capturing the Validate* events that are bubbled by components/pages): The first level is provided to validate basic properties with JSR 303, and the second level (only triggered if the first was ok) that use the collected Validators provided by the user to combine inputs (identified by position!) and parsed options.
+%
+At the moment all this framework rely on naming conventions (on parameters/options name) and is quite n{\"a}ive. Again, ideally, the available validation framework should be used...
+
+
 
 \section{Limitations, Issues, and Pitfalls}
-\paragraph{For the moment we do not build CLIParser with ChainBuilder}  because we need to capture all the steps into uniform commands, but each of them has different inputs/dependencies that we must consider properly.
+\paragraph{The {\tt -}{\tt -help} scenario} to support this scenario: print the help and exit we need to call System.exit() which is in general bad. Ideally one should ``notify'' the registry to shutdown, perform all the clean-up thing and (only then) exit. At this moment, this is not possible to do, indeed we manually call exit().
 
-\paragraph{Define validation constraints on inputs and in general combine multiple inputs to be validated together} This can be done by define two levels of validation, similarly to client and server side (that in tapestry can be done by raising a validation exception inside components once the Validate* events are bubbled!): The first level is provided to validate basic properties with JSR 303, and the second level (only triggered if the first was ok) that use the collected Validators provided by the user to combine inputs (identified by position!) and parsed options.
-{\bf NOTE:} At the moment we provide only the scaffolding for creating a pipeline of validators, each stage consist of the application of a validator and a filter that accumulate validation constrains as the pipeline goes on.
+\paragraph{Symbols via ShadowBuilder}This solution works fine as long as we do not need symbols to be injected inside the CLIParser. In this case in fact we create a circular dependency that provider the registry to startup.
+
+\paragraph{For the moment we do not build CLIParser with ChainBuilder}  because we need to capture all the steps into uniform commands, but each of them has different inputs/dependencies that we must consider properly. Maybe a Pipeline is more appropriate ? We need to perform specific actions at each step.
 
 \paragraph{Using {\em native} Tapestry validators} At the moment the library cannot use any of the tapestry build-in, or contributed validators.
 Ideally, we want to mix-and-match JSR-303 validator with tapestry validators (defined via the @Validate annotation). For this, we may need to define a \lstJava{BeanValidatorConfigurer} that exports and use Tapestry Validator. Note that the validation framework at the moment is quite coupled with tapestry-core and the Web part of tapestry. 
