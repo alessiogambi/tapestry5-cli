@@ -7,6 +7,7 @@ import org.apache.tapestry5.ioc.MappedConfiguration;
 import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
 import org.apache.tapestry5.ioc.annotations.InjectService;
+import org.gambi.tapestry5.cli.data.AnnotatedNestedBean;
 import org.gambi.tapestry5.cli.data.NestedBean;
 import org.gambi.tapestry5.cli.services.CLIValidatorFilter;
 import org.gambi.tapestry5.cli.services.impl.SumValidator;
@@ -74,6 +75,7 @@ public class TestModule {
 		// configuration.add("BooleanBean", new BooleanBean());
 		// configuration.add("VectorBean", new VectorBean());
 		configuration.add("NestedBean", new NestedBean());
+		configuration.add("AnnotatedNestedBean", new AnnotatedNestedBean());
 
 	}
 }

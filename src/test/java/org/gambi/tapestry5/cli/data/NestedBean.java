@@ -21,22 +21,22 @@ public class NestedBean {
 	}
 
 	public BeanA getBeanA() {
-		System.out.println("NestedBean.getBeanA()");
+		// System.out.println("NestedBean.getBeanA()");
 		return beanA;
 	}
 
 	public VectorBean getVectorBean() {
-		System.out.println("NestedBean.getVectorBean()");
+		// System.out.println("NestedBean.getVectorBean()");
 		return vectorBean;
 	}
 
 	public void setBeanA(BeanA beanA) {
-		System.out.println("NestedBean.setBeanA()");
+		// System.out.println("NestedBean.setBeanA()");
 		this.beanA = beanA;
 	}
 
 	public void setVectorBean(VectorBean vectorBean) {
-		System.out.println("NestedBean.setVectorBean()");
+		// System.out.println("NestedBean.setVectorBean()");
 		this.vectorBean = vectorBean;
 	}
 }

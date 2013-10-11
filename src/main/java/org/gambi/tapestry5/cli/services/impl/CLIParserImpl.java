@@ -62,9 +62,6 @@ public class CLIParserImpl implements CLIParser {
 
 		this.logger = logger;
 		this.options = new Options();
-		for (Option option : configuration) {
-			options.addOption(option);
-		}
 		this.validator = validator;
 		this.cliValidator = cliValidator;
 		this.applicationConfigurationSource = applicationBeanSource;
@@ -73,6 +70,21 @@ public class CLIParserImpl implements CLIParser {
 		this.commandName = commandName;
 		formatter = new HelpFormatter();
 		parser = new BasicParser();
+
+		// Work on the contributions. User provided via explicit contribution
+		// override the annotation provided ones
+		for (Option option : applicationBeanSource.parsingOptions()) {
+			logger.debug("New Parsing option (Annotation): " + option
+					+ " option " + option.isRequired());
+			options.addOption(option);
+		}
+
+		for (Option option : configuration) {
+			logger.debug("New Parsing option (Contribution): " + option
+					+ " option " + option.isRequired());
+			options.addOption(option);
+		}
+
 	}
 
 	private ApplicationConfiguration parseTheInput(String[] args)
@@ -81,7 +93,7 @@ public class CLIParserImpl implements CLIParser {
 		// Parse the input line
 		parsedOptions = parser.parse(options, args);
 		// Gives value to each property of the application bean object
-		return applicationConfigurationSource.get(parsedOptions);
+		return applicationConfigurationSource.afterParsing(parsedOptions);
 	}
 
 	private void validate(ApplicationConfiguration applicationConfiguration)
@@ -89,6 +101,8 @@ public class CLIParserImpl implements CLIParser {
 		boolean isValid = true;
 		try {
 			for (Object property : applicationConfiguration.getAllProperties()) {
+
+				logger.debug("Validating " + property);
 
 				Set<ConstraintViolation<Object>> result = validator
 						.validate(property);

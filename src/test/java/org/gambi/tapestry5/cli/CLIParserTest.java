@@ -109,7 +109,7 @@ public class CLIParserTest {
 
 	}
 
-	@Test
+	// @Test
 	public void vectorOption() throws MalformedURLException {
 		CLIParser parser = registry.getService(CLIParser.class);
 		String[] args = new String[] { "-a", "100", "--beta", "7xxs", "-g",
@@ -121,6 +121,73 @@ public class CLIParserTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 			Assert.fail("Exception " + e.getMessage());
+		}
+	}
+
+	// @Test
+	public void annotations() throws MalformedURLException {
+		CLIParser parser = registry.getService(CLIParser.class);
+		String[] args = new String[] { "-a", "100", "--beta", "7xxs", "-g",
+				"gamma", "--epsilon", "12", "-d", "15", "-u",
+				"http://www.google.com", "-su", "http://www.bing.com", "-o",
+				"123", "--jonny", "-v", "1", "2", "1", "13", "50" };
+		try {
+			parser.parse(args);
+			Assert.fail("Expected a ParsingException");
+		} catch (ParseException e) {
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail("Expected a ParsingException");
+		}
+	}
+
+	// @Test
+	public void annotations2() throws MalformedURLException {
+		CLIParser parser = registry.getService(CLIParser.class);
+		String[] args = new String[] { "-z", "bb", "-a", "100", "--beta",
+				"7xxs", "-g", "gamma", "--epsilon", "12", "-d", "15", "-u",
+				"http://www.google.com", "-su", "http://www.bing.com", "-o",
+				"123", "--jonny", "-v", "1", "2", "1", "13", "50" };
+		try {
+			parser.parse(args);
+			Assert.fail("Expected a ValidationException");
+		} catch (ValidationException e) {
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail("Expected a ValidationException");
+		}
+	}
+
+	// @Test
+	public void annotations3() throws MalformedURLException {
+		CLIParser parser = registry.getService(CLIParser.class);
+		String[] args = new String[] { "-z", "bb", "-a", "100", "--beta",
+				"7xxs", "-g", "gamma", "--epsilon", "12", "-d", "15", "-u",
+				"http://www.google.com", "-su", "http://www.bing.com", "-o",
+				"123", "--jonny", "-v", "1", "2", "1", "13", "50" };
+		try {
+			parser.parse(args);
+			Assert.fail("Expected a ValidationException");
+		} catch (ValidationException e) {
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail("Expected a ValidationException");
+		}
+	}
+
+	@Test
+	public void annotations4() throws MalformedURLException {
+		CLIParser parser = registry.getService(CLIParser.class);
+		String[] args = new String[] { "--pappa", "foobar", "-z", "bb5555",
+				"-a", "100", "--beta", "7xxs", "-g", "gamma", "--epsilon",
+				"12", "-d", "15", "-u", "http://www.google.com", "-su",
+				"http://www.bing.com", "-o", "123", "--jonny", "-v", "1", "2",
+				"1", "13", "50" };
+		try {
+			parser.parse(args);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail("Expected no Exception");
 		}
 	}
 

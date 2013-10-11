@@ -8,6 +8,11 @@ import javax.validation.constraints.Size;
 
 public class BeanA {
 
+	@Size(min = 3, max = 5, message = "Legnth of beta Must be between 3 and 5")
+	private String beta;
+
+	@NotNull
+	private String gamma;
 	@NotNull
 	@Min(value = 1)
 	private Integer delta;
@@ -58,12 +63,6 @@ public class BeanA {
 
 	public BeanA() {
 	}
-
-	@Size(min = 3, max = 5, message = "Legnth of beta Must be between 3 and 5")
-	private String beta;
-
-	@NotNull
-	private String gamma;
 
 	public void setBeta(String beta) {
 		this.beta = beta;
