@@ -13,7 +13,6 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.tapestry5.ValidationException;
-import org.apache.tapestry5.internal.antlr.PropertyExpressionParser.constant_return;
 import org.apache.tapestry5.ioc.services.TypeCoercer;
 import org.apache.tapestry5.ioc.util.UnknownValueException;
 import org.gambi.tapestry5.cli.data.ApplicationConfiguration;
