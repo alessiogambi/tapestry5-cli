@@ -162,18 +162,13 @@ We adopt this two-leveled validation because is similar to client and server sid
 %
 At the moment all this framework rely on naming conventions (on parameters/options name) and is quite n{\"a}ive. Again, ideally, the available validation framework should be used...
 
-
+\paragraph{@ParsingOption FIELD annotation} Beans contributed for validation can use the annotation to bind a specific field of the class with the relative parsing option. {\bf NOTE:} the bean MUST respect the bean Java convention, therefore getter/setter MUST be always specified for this to work.
 
 \section{Limitations, Issues, and Pitfalls}
 \paragraph{The {\tt -}{\tt -help} scenario} to support this scenario: print the help and exit we need to call System.exit() which is in general bad. Ideally one should ``notify'' the registry to shutdown, perform all the clean-up thing and (only then) exit. At this moment, this is not possible to do, indeed we manually call exit().
 
-\paragraph{Symbols via ShadowBuilder}This solution works fine as long as we do not need symbols to be injected inside the CLIParser. In this case in fact we create a circular dependency that provider the registry to startup.
-
-\paragraph{For the moment we do not build CLIParser with ChainBuilder}  because we need to capture all the steps into uniform commands, but each of them has different inputs/dependencies that we must consider properly. Maybe a Pipeline is more appropriate ? We need to perform specific actions at each step.
-
 \paragraph{Using {\em native} Tapestry validators} At the moment the library cannot use any of the tapestry build-in, or contributed validators.
 Ideally, we want to mix-and-match JSR-303 validator with tapestry validators (defined via the @Validate annotation). For this, we may need to define a \lstJava{BeanValidatorConfigurer} that exports and use Tapestry Validator. Note that the validation framework at the moment is quite coupled with tapestry-core and the Web part of tapestry. 
-
 
 \paragraph{Why I do get a \lstJava{No validator could be found for type: java.net.URL}?} While developing we ended up to apply several validation constraints to basic types (e.g., String) that passed our tests. Then we defined new validators and changed the type of the variable. This is risky as not all the annotations can be applied to all the types. After some struggle we figured this out, so remember to check the compatibility of constraints with object types. In our case we applied \lstJava{@NotNull}, \lstJava{@NotEmpty} and \lstJava{@Pattern} to a String for checking if that was a valid URL.; Subsequently, we added a custom \lstJava{@ValidURL} to check that and removed the \lstJava{@Pattern} annotation, still we applied that to a String object and that was fine. Finally, as \lstJava{@ValidURL} targets URLs we changed the type of the object to \lstJava{java.net.URL} and then we got the exception. We blamed the custom validator first, and then we realized that we needed just to remove \lstJava{@NotEmpty} instead !
 
