@@ -94,7 +94,7 @@
 				<configuration>
 					<archive>
 						<manifestEntries>
-							<Tapestry-Module-Classes>org.gambi.tapestry5.modules.cli.CLIModule</Tapestry-Module-Classes>
+							<Tapestry-Module-Classes>org.gambi.tapestry5.cli.CLIModule</Tapestry-Module-Classes>
 						</manifestEntries>
 					</archive>
 				</configuration>
