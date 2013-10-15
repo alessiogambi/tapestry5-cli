@@ -102,6 +102,7 @@ A possible chain can be defined by the {\em terminator} command that is export a
   \label{fig:highlevelarchitecture}
 \end{figure}
 
+
 The chain let us realize a subset of the required functionalities, in fact we can realize the {\em positive} scenario provided that we input a well formed input on the command line, and provided the all the values are valid. However, we cannot yet realize the {\em negative} scenario, that is, the generation on the output of the diagnostic messages and the usage message in case the provided input is not well formed or some of the input values are not valid. 
 % TODO: Here I feel something is missing
 To do so we need to wrap the inner chain with proper code to capture the exceptions, create the contextualized message for the user, print that out to the console, and finally, stop the application execution.
@@ -123,10 +124,12 @@ With this information we identified some possible solutions to be evaluated:
 
 
 \subsection{Prefix and bindings for Symbols/options and inputs}
-\paragraph{Exporting Symbols or contributing a new symbol provider to SymbolSource?}
-
- like a \lstJava{SymbolSource}. Parsing and validation are additional commands injected before this one.
- \lstJava{SymbolProvider}, 
+\paragraph{Exporting Symbols or contributing a new symbol provider to
+SymbolSource?} An alternative way to provide option values and such is to
+provide a option Access service, similar to SymbolSource that we can inject and
+query. This would make it easier to access simbols and may rely on annotations
+to inject options. The downside is that we need to yet provide another service,
+while we can simply rely on symbols which is a core tap service. 
 
 \subsection*{}
 
