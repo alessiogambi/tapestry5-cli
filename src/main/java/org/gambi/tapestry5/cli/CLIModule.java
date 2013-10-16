@@ -98,7 +98,7 @@ public class CLIModule {
 
 		// STAGING
 		binder.bind(RuntimeSymbolProvider.class, CLISymbolProvider.class)
-				.withId("CLISymbolProvider");
+				.withId(CLISymbolConstants.SYMBOL_PROVIDER_NAME);
 
 	}
 
@@ -166,9 +166,10 @@ public class CLIModule {
 
 	public static void contributeSymbolSource(
 			OrderedConfiguration<SymbolProvider> configuration,
-			@InjectService("CLISymbolProvider") SymbolProvider cliSymbolProvider) {
+			@InjectService(CLISymbolConstants.SYMBOL_PROVIDER_NAME) SymbolProvider cliSymbolProvider) {
 
-		configuration.add("CLISymbolProvider", cliSymbolProvider, "after:*");
+		configuration.add(CLISymbolConstants.SYMBOL_PROVIDER_NAME,
+				cliSymbolProvider, "before:ApplicationDefaults");
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -286,7 +287,7 @@ public class CLIModule {
 			// CHECK COMBINATIONS OF INPUT/OPTIONS
 			CLIValidator cliValidator,
 			//
-			RuntimeSymbolProvider runtimeSymbolProvider,
+			@InjectService(CLISymbolConstants.SYMBOL_PROVIDER_NAME) RuntimeSymbolProvider runtimeSymbolProvider,
 			//
 			// Collected the Distributed Configurations
 			Collection<Option> options) {

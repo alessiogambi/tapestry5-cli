@@ -1,5 +1,6 @@
 package org.gambi.tapestry5.cli.services.impl;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,6 +28,7 @@ import org.gambi.tapestry5.cli.services.RuntimeSymbolProvider;
 import org.gambi.tapestry5.cli.utils.CLIDefaultOptions;
 import org.slf4j.Logger;
 
+// TODO Makes better refactoring for help/message on console
 public class CLIParserImpl implements CLIParser {
 
 	private Logger logger;
@@ -43,6 +45,7 @@ public class CLIParserImpl implements CLIParser {
 	private CommandLine parsedOptions;
 
 	private HelpFormatter formatter;
+	private PrintWriter pw;
 
 	private RuntimeSymbolProvider runtimeSymbolProvider;
 
@@ -72,6 +75,7 @@ public class CLIParserImpl implements CLIParser {
 		this.runtimeSymbolProvider = runtimeSymbolProvider;
 		this.commandName = commandName;
 		formatter = new HelpFormatter();
+		pw = new PrintWriter(System.out);
 		parser = new BasicParser();
 	}
 
@@ -87,11 +91,15 @@ public class CLIParserImpl implements CLIParser {
 	private void validate(ApplicationConfiguration applicationConfiguration)
 			throws ValidationException {
 		boolean isValid = true;
+
+		StringBuffer errorBuffer = new StringBuffer();
+		errorBuffer.append("\t Violation Messages: \n");
 		try {
 			for (Object property : applicationConfiguration.getAllProperties()) {
 
 				Set<ConstraintViolation<Object>> result = validator
 						.validate(property);
+
 				for (ConstraintViolation<Object> viol : result) {
 					logger.debug("CLIParserImpl.validate() : "
 							+ viol.getMessage());
@@ -99,16 +107,32 @@ public class CLIParserImpl implements CLIParser {
 							+ viol.getConstraintDescriptor());
 					logger.debug("CLIParserImpl.validate() : "
 							+ viol.getInvalidValue());
+
+					errorBuffer.append("-");
+					errorBuffer.append(viol.getMessage());
+					errorBuffer.append("\n");
 				}
+
 				if (result.size() > 0) {
 					isValid = false;
 				}
 			}
+
+			errorBuffer.append("\n");
+			errorBuffer.append("\n");
+
 		} catch (Exception e) {
+
+			formatter.printWrapped(pw, formatter.getWidth(),
+					errorBuffer.toString());
+			pw.flush();
 			throw new ValidationException("Error during validation", e);
 		}
 
 		if (!isValid) {
+			formatter.printWrapped(pw, formatter.getWidth(),
+					errorBuffer.toString());
+			pw.flush();
 			throw new ValidationException(
 					"The provided command line input is not valid");
 		}
@@ -117,7 +141,8 @@ public class CLIParserImpl implements CLIParser {
 	private void validate(final Map<String, String> theSymbols)
 			throws ValidationException {
 		boolean isValid = true;
-
+		StringBuffer errorBuffer = new StringBuffer();
+		errorBuffer.append("\tViolation Messages: \n");
 		try {
 			List<String> result = new ArrayList<String>();
 
@@ -126,15 +151,26 @@ public class CLIParserImpl implements CLIParser {
 			for (String violation : result) {
 				logger.warn("CLIParserImpl.validate() Input Violation : "
 						+ violation);
+				errorBuffer.append("-");
+				errorBuffer.append(violation);
+				errorBuffer.append("\n");
 			}
 			if (result.size() > 0) {
 				isValid = false;
 			}
+			errorBuffer.append("\n");
+			errorBuffer.append("\n");
 		} catch (Throwable e) {
+			formatter.printWrapped(pw, formatter.getWidth(),
+					errorBuffer.toString());
+			pw.flush();
 			throw new ValidationException("Error during validation", e);
 		}
 
 		if (!isValid) {
+			formatter.printWrapped(pw, formatter.getWidth(),
+					errorBuffer.toString());
+			pw.flush();
 			throw new ValidationException(
 					"The provided command line input is not valid");
 		}
