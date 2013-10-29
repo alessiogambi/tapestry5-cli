@@ -10,6 +10,7 @@ import org.apache.tapestry5.ioc.RegistryBuilder;
 import org.apache.tapestry5.ioc.services.SymbolSource;
 import org.gambi.tapestry5.cli.modules.TestModule;
 import org.gambi.tapestry5.cli.services.CLIParser;
+import org.gambi.tapestry5.cli.services.impl.AnnotatedTestService;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -109,7 +110,7 @@ public class CLIParserTest {
 
 	}
 
-	@Test
+	// @Test
 	public void vectorOption() throws MalformedURLException {
 		CLIParser parser = registry.getService(CLIParser.class);
 		String[] args = new String[] { "-a", "100", "--beta", "7xxs", "-g",
@@ -185,5 +186,26 @@ public class CLIParserTest {
 			Assert.fail("Wrong exception " + e.getMessage());
 		}
 		Assert.fail("Validation Exception not raised");
+	}
+
+	@Test
+	public void CLIAnnotations() throws MalformedURLException {
+		CLIParser parser = registry.getService(CLIParser.class);
+		String[] args = new String[] { "-a", "100", "--beta", "7xxs", "-g",
+				"gamma", "--epsilon", "12", "-d", "15", "-u",
+				"http://www.google.com", "-su", "http://www.bing.com", "-o",
+				"123", "--jonny", "-v", "1", "2", "1", "13", "50" };
+		try {
+			parser.parse(args);
+
+			AnnotatedTestService testService = registry
+					.getService(AnnotatedTestService.class);
+
+			Assert.assertNotNull(testService.getOptionAlfaValue());
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail("Exception " + e.getMessage());
+		}
 	}
 }

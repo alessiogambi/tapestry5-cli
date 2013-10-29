@@ -1,5 +1,7 @@
 package org.gambi.tapestry5.cli;
 
+import static org.apache.tapestry5.ioc.OrderConstraintBuilder.before;
+
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
@@ -18,22 +20,33 @@ import org.apache.tapestry5.internal.beanvalidator.BeanValidatorSourceImpl;
 import org.apache.tapestry5.internal.beanvalidator.MessageInterpolatorImpl;
 import org.apache.tapestry5.ioc.Configuration;
 import org.apache.tapestry5.ioc.ObjectLocator;
+import org.apache.tapestry5.ioc.ObjectProvider;
 import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
+import org.apache.tapestry5.ioc.annotations.Contribute;
 import org.apache.tapestry5.ioc.annotations.InjectService;
+import org.apache.tapestry5.ioc.annotations.Marker;
 import org.apache.tapestry5.ioc.annotations.Symbol;
+import org.apache.tapestry5.ioc.services.Builtin;
 import org.apache.tapestry5.ioc.services.Coercion;
 import org.apache.tapestry5.ioc.services.CoercionTuple;
+import org.apache.tapestry5.ioc.services.MasterObjectProvider;
 import org.apache.tapestry5.ioc.services.PipelineBuilder;
 import org.apache.tapestry5.ioc.services.PropertyShadowBuilder;
 import org.apache.tapestry5.ioc.services.SymbolProvider;
+import org.apache.tapestry5.ioc.services.TapestryIOCModule;
 import org.apache.tapestry5.ioc.services.ThreadLocale;
+import org.gambi.tapestry5.cli.internal.services.CLIObjectProvider;
+import org.gambi.tapestry5.cli.internal.services.InputObjectProvider;
 import org.gambi.tapestry5.cli.services.ApplicationConfigurationSource;
+import org.gambi.tapestry5.cli.services.CLIOptionProvider;
+import org.gambi.tapestry5.cli.services.CLIOptionSource;
 import org.gambi.tapestry5.cli.services.CLIParser;
 import org.gambi.tapestry5.cli.services.CLIValidator;
 import org.gambi.tapestry5.cli.services.CLIValidatorFilter;
 import org.gambi.tapestry5.cli.services.RuntimeSymbolProvider;
 import org.gambi.tapestry5.cli.services.impl.ApplicationConfigurationSourceImpl;
+import org.gambi.tapestry5.cli.services.impl.CLIOptionSourceImpl;
 import org.gambi.tapestry5.cli.services.impl.CLIParserImpl;
 import org.gambi.tapestry5.cli.services.impl.CLISymbolProvider;
 import org.gambi.tapestry5.cli.services.impl.DefaullCLIValidator;
@@ -99,6 +112,9 @@ public class CLIModule {
 		// STAGING
 		binder.bind(RuntimeSymbolProvider.class, CLISymbolProvider.class)
 				.withId(CLISymbolConstants.SYMBOL_PROVIDER_NAME);
+
+		binder.bind(CLIOptionSource.class, CLIOptionSourceImpl.class)
+				.withMarker(Builtin.class);
 
 	}
 
@@ -295,6 +311,34 @@ public class CLIModule {
 		return new CLIParserImpl(logger, commandName, options,
 				applicationConfigurationSource, validator, cliValidator,
 				runtimeSymbolProvider);
+	}
+
+	/**
+	 * Add the CLIOption and CLIInput annotation provider. This code is taken
+	 * from {@link TapestryIOCModule}.
+	 * 
+	 * <dl>
+	 * <dt>CLIOption</dt>
+	 * <dd>Supports the {@link org.gambi.tapestry5.cli.annotations.CLIOption}
+	 * annotations</dd>
+	 * <dt>CLIInput</dt>
+	 * <dd>Supports the {@link org.gambi.tapestry5.cli.annotations.CLIInput}
+	 * annotations</dd>
+	 * </dl>
+	 */
+	/*
+	 * Note: this cannot receive normal services as it implements the
+	 * ObjectProvider, which by definition instantiates all the other objects !
+	 * Despite this, it can receive @Builtin Services.
+	 */
+	@Contribute(MasterObjectProvider.class)
+	public static void setupObjectProviders(
+			OrderedConfiguration<ObjectProvider> configuration) {
+		configuration.addInstance("CLIOption", CLIObjectProvider.class,
+				before("AnnotationBasedContributions").build());
+
+		configuration.addInstance("CLIInput", InputObjectProvider.class,
+				before("AnnotationBasedContributions").build());
 	}
 
 }

@@ -8,7 +8,9 @@ import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
 import org.apache.tapestry5.ioc.annotations.InjectService;
 import org.gambi.tapestry5.cli.data.NestedBean;
+import org.gambi.tapestry5.cli.services.CLIOptionProvider;
 import org.gambi.tapestry5.cli.services.CLIValidatorFilter;
+import org.gambi.tapestry5.cli.services.impl.AnnotatedTestService;
 import org.gambi.tapestry5.cli.services.impl.SumValidator;
 import org.gambi.tapestry5.cli.utils.CLISymbolConstants;
 
@@ -30,6 +32,24 @@ public class TestModule {
 	//
 	// }
 
+	public static void contributeCLIOptionSource(
+			OrderedConfiguration<CLIOptionProvider> providers) {
+		CLIOptionProvider fake = new CLIOptionProvider() {
+
+			public String valueForOption(String optionName) {
+				System.out.println("valueForOption(String " + optionName + ")");
+				return "Fake Value";
+			}
+
+			public String valueForInput(int inputPosition) {
+				System.out.println("valueForInput(int " + inputPosition + ")");
+				return "Fake Value";
+			}
+		};
+
+		providers.add("Fake", fake, "after:*");
+	}
+
 	public static void contributeApplicationDefaults(
 			MappedConfiguration<String, String> configuration) {
 
@@ -38,6 +58,8 @@ public class TestModule {
 
 	public static void bind(final ServiceBinder binder) {
 		binder.bind(CLIValidatorFilter.class, SumValidator.class).withId("Sum");
+
+		binder.bind(AnnotatedTestService.class);
 	}
 
 	public static void contributeCLIValidator(
