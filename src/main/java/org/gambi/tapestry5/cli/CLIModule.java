@@ -25,7 +25,6 @@ import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
 import org.apache.tapestry5.ioc.annotations.Contribute;
 import org.apache.tapestry5.ioc.annotations.InjectService;
-import org.apache.tapestry5.ioc.annotations.Marker;
 import org.apache.tapestry5.ioc.annotations.Symbol;
 import org.apache.tapestry5.ioc.services.Builtin;
 import org.apache.tapestry5.ioc.services.Coercion;
@@ -39,7 +38,6 @@ import org.apache.tapestry5.ioc.services.ThreadLocale;
 import org.gambi.tapestry5.cli.internal.services.CLIObjectProvider;
 import org.gambi.tapestry5.cli.internal.services.InputObjectProvider;
 import org.gambi.tapestry5.cli.services.ApplicationConfigurationSource;
-import org.gambi.tapestry5.cli.services.CLIOptionProvider;
 import org.gambi.tapestry5.cli.services.CLIOptionSource;
 import org.gambi.tapestry5.cli.services.CLIParser;
 import org.gambi.tapestry5.cli.services.CLIValidator;
@@ -145,6 +143,7 @@ public class CLIModule {
 	/**
 	 */
 
+	// FIXME make this a contribution only with Validators not Filter !
 	// SHould this be a PIPELINE instead ?
 	public static CLIValidator build(
 			@InjectService("PipelineBuilder") PipelineBuilder builder,
@@ -334,6 +333,7 @@ public class CLIModule {
 	@Contribute(MasterObjectProvider.class)
 	public static void setupObjectProviders(
 			OrderedConfiguration<ObjectProvider> configuration) {
+		
 		configuration.addInstance("CLIOption", CLIObjectProvider.class,
 				before("AnnotationBasedContributions").build());
 
