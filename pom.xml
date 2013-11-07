@@ -48,8 +48,8 @@
 		<!-- Input Validation -->
 		<dependency>
 			<groupId>org.apache.tapestry</groupId>
-			<artifactId>tapestry-beanvalidator</artifactId>
-			<version>5.3.7</version>
+			<artifactId>tapestry-simple-beanvalidator</artifactId>
+			<version>5.3.7-SNAPSHOT</version>
 		</dependency>
 
 	</dependencies>
@@ -77,11 +77,17 @@
 					</archive>
 				</configuration>
 			</plugin>
-
-
-
 		</plugins>
 	</build>
+
+	<repositories>
+		<repository>
+			<name>Infosys Repo</name>
+			<id>infosys-repo</id>
+			<url>http://www.infosys.tuwien.ac.at/mvn</url>
+		</repository>
+	</repositories>
+
 	<properties>
 		<tapestry-version>5.3.7</tapestry-version>
 	</properties>
