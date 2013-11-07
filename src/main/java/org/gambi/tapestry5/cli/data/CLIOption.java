@@ -5,7 +5,7 @@ import org.apache.commons.cli.OptionBuilder;
 /**
  * This class contains all the information for defining Command line options. It
  * will be used later inside the CLIParser to instantiate the used CLIparsing
- * framework, i.e., Apache-commonsCLI
+ * framework, i.e., Apache CommonsCLI
  * 
  * @author alessiogambi
  * 
@@ -28,6 +28,7 @@ public class CLIOption {
 		this.description = description;
 	}
 
+	@SuppressWarnings("static-access")
 	@Override
 	public String toString() {
 		// TODO Maybe not the best way of doing this ;
