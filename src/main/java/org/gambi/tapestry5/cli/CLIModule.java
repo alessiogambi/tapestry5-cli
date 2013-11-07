@@ -2,23 +2,10 @@ package org.gambi.tapestry5.cli;
 
 import java.util.Collection;
 
-import javax.validation.MessageInterpolator;
 import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
-import javax.validation.groups.Default;
 
 import org.apache.commons.cli.Option;
-import org.apache.tapestry5.beanvalidator.BeanValidatorConfigurer;
-import org.apache.tapestry5.beanvalidator.BeanValidatorGroupSource;
-import org.apache.tapestry5.beanvalidator.BeanValidatorSource;
-import org.apache.tapestry5.internal.beanvalidator.BeanValidationGroupSourceImpl;
-import org.apache.tapestry5.internal.beanvalidator.BeanValidatorSourceImpl;
-import org.apache.tapestry5.internal.beanvalidator.MessageInterpolatorImpl;
-import org.apache.tapestry5.ioc.Configuration;
-import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
-import org.apache.tapestry5.ioc.services.PropertyShadowBuilder;
-import org.apache.tapestry5.ioc.services.ThreadLocale;
 import org.gambi.tapestry5.cli.services.ApplicationConfigurationSource;
 import org.gambi.tapestry5.cli.services.CLIParser;
 import org.gambi.tapestry5.cli.services.impl.ApplicationConfigurationSourceImpl;
@@ -57,87 +44,36 @@ import org.slf4j.Logger;
  * We adopt this solution because symbol names are case insensitive.
  * 
  * @author alessiogambi
+ * 
+ * @category Module
  */
 public class CLIModule {
 
-	/*
-	 * FIXME Ideally we should just add the BeanValidationModule as submodule to
-	 * have everything working. However, by doing so we end up generating
-	 * exceptions at startup because of an unknown problem. Therefore the
-	 * solution here is to "recreate" what we need from the original
-	 * BeanValidationModule.class: <br/>
-	 * https://raw.github.com/apache/tapestry-5/master
-	 * /tapestry-beanvalidator/src
-	 * /main/java/org/apache/tapestry5/beanvalidator/modules
-	 * /BeanValidatorModule.java
-	 * 
-	 * 
-	 * TODO Try the service override instead of the binding
-	 */
-
 	public static void bind(final ServiceBinder binder) {
-		binder.bind(BeanValidatorGroupSource.class,
-				BeanValidationGroupSourceImpl.class);
-		binder.bind(BeanValidatorSource.class, BeanValidatorSourceImpl.class);
 		binder.bind(ApplicationConfigurationSource.class,
 				ApplicationConfigurationSourceImpl.class);
 	}
 
-	/*
-	 * Build the validator service
-	 */
-	public static Validator buildBeanValidator(
-			ValidatorFactory validatorFactory,
-			// Che e' il Prop Shadow Builder ?!!
-			PropertyShadowBuilder propertyShadowBuilder) {
-		return propertyShadowBuilder.build(validatorFactory, "validator",
-				Validator.class);
-	}
-
-	public static ValidatorFactory buildValidatorFactory(
-			BeanValidatorSource beanValidatorSource,
-			PropertyShadowBuilder propertyShadowBuilder) {
-		return propertyShadowBuilder.build(beanValidatorSource,
-				"validatorFactory", ValidatorFactory.class);
-	}
-
-	public static void contributeBeanValidatorGroupSource(
-			final Configuration<Class> configuration) {
-		configuration.add(Default.class);
-	}
-
-	public static void contributeBeanValidatorSource(
-			final OrderedConfiguration<BeanValidatorConfigurer> configuration,
-			final ThreadLocale threadLocale) {
-		configuration.add("LocaleAwareMessageInterpolator",
-				new BeanValidatorConfigurer() {
-					public void configure(
-							javax.validation.Configuration<?> configuration) {
-						MessageInterpolator defaultInterpolator = configuration
-								.getDefaultMessageInterpolator();
-
-						configuration
-								.messageInterpolator(new MessageInterpolatorImpl(
-										defaultInterpolator, threadLocale));
-					}
-				});
-	}
-
-	/*
-	 * Build the CLI Parser object to process the input data
+	/**
+	 * Build the CLI Parser object to process the input data.
 	 */
 	public CLIParser buildCLIParser(
-	// Resources
-			Logger logger,
-			// Apparently this cannot be injected so easily !
-			// Messages messages,
-			// Distributed Configurations
-			Collection<Option> options,
-			// Services
-			ApplicationConfigurationSource applicationConfigurationSource,
-			// TODO Now this is the JSR303 validator, but shouldn't we use the
-			// T5 validator (which eventually contains the JSR one?)
-			Validator validator) {
+	/**
+	 * @category Resource
+	 */
+	Logger logger,
+	/**
+	 * @category Service CLIModule
+	 */
+	ApplicationConfigurationSource applicationConfigurationSource,
+	/**
+	 * @category Service SimpleValidatorModule
+	 */
+	Validator validator,
+	/**
+	 * @category UserContributions
+	 */
+	Collection<Option> options) {
 
 		return new CLIParserImpl(logger, options,
 				applicationConfigurationSource, validator);
