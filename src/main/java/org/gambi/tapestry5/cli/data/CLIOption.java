@@ -26,9 +26,51 @@ public class CLIOption {
 		this.description = description;
 	}
 
-
 	public String getShortOpt() {
 		return shortOpt;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((longOpt == null) ? 0 : longOpt.hashCode());
+		result = prime * result + nArgs;
+		result = prime * result
+				+ ((shortOpt == null) ? 0 : shortOpt.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof CLIOption)) {
+			return false;
+		}
+		CLIOption other = (CLIOption) obj;
+		if (longOpt == null) {
+			if (other.longOpt != null) {
+				return false;
+			}
+		} else if (!longOpt.equals(other.longOpt)) {
+			return false;
+		}
+		if (nArgs != other.nArgs) {
+			return false;
+		}
+		if (shortOpt == null) {
+			if (other.shortOpt != null) {
+				return false;
+			}
+		} else if (!shortOpt.equals(other.shortOpt)) {
+			return false;
+		}
+		return true;
 	}
 
 	public void setShortOpt(String shortOpt) {
