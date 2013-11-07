@@ -1,5 +1,7 @@
 package org.gambi.tapestry5.cli.data;
 
+import org.apache.commons.cli.OptionBuilder;
+
 /**
  * This class contains all the information for defining Command line options. It
  * will be used later inside the CLIParser to instantiate the used CLIparsing
@@ -24,6 +26,14 @@ public class CLIOption {
 		this.nArgs = nArgs;
 		this.required = required;
 		this.description = description;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Maybe not the best way of doing this ;
+		return OptionBuilder.withLongOpt(longOpt).hasArgs(nArgs)
+				.isRequired(required).withDescription(description)
+				.create(shortOpt).toString();
 	}
 
 	public String getShortOpt() {

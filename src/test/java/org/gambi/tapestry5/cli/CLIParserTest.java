@@ -107,4 +107,23 @@ public class CLIParserTest {
 		}
 		Assert.fail("Validation Exception not raised");
 	}
+
+	@Test
+	public void conflictingOptions() {
+		registry.performRegistryStartup();
+
+		CLIParser parser = registry.getService(CLIParser.class);
+		String[] args = new String[] { "-a", "-1", "--beta", "7", "-g", "",
+				"first-arg", "second-args", "whaterver" };
+
+		try {
+			parser.parse(args);
+		} catch (ValidationException e) {
+			// e.printStackTrace();
+			return;
+		} catch (Exception e) {
+			Assert.fail("Wrong exception " + e.getMessage());
+		}
+		Assert.fail("Validation Exception not raised");
+	}
 }

@@ -1,5 +1,6 @@
 package org.gambi.tapestry5.cli.services.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
@@ -51,19 +52,36 @@ public class CLIParserImpl implements CLIParser {
 	 * 
 	 */
 	private void validateAndMerge(Collection<CLIOption> _options) {
-		// TODO Check for duplicate options and so..
+		ArrayList<CLIOption> cliOptions = new ArrayList<CLIOption>();
 
-		// TODO Check for duplicate options and so..
-		this.cliOptions = _options;
+		for (CLIOption cliOption : _options) {
+			if (!cliOptions.contains(_options)) {
+				logger.debug("Adding " + _options);
+				cliOptions.add(cliOption);
+			} else {
+				logger.debug("Merging options "
+						+ cliOptions.get(cliOptions.indexOf(_options))
+						+ " with " + cliOption);
+				cliOptions.get(cliOptions.indexOf(_options)).merge(cliOption);
+			}
+		}
 
-		logger.warn("Validation of User contribution is not yet implemented !");
-		// throw new
-		// IllegalArgumentException("Found conflicting CLIOptions, please revise your contributions !");
-		// this.configuration = new Options();
-		// for (Option option : _options) {
-		// configuration.addOption(option);
-		// }
+		// Validate (ideally here there are few options to check);
+		for (CLIOption cliOption1 : cliOptions) {
+			for (CLIOption cliOption2 : cliOptions) {
+				if (cliOption1.conflicts(cliOption2)) {
 
+					throw new IllegalArgumentException(
+							"Found conflicting CLIOptions: Option "
+									+ cliOption1 + " conflicts with "
+									+ cliOption2
+									+ ". Please revise your contributions !");
+				}
+			}
+		}
+
+		// Now update the variable
+		this.cliOptions = cliOptions;
 	}
 
 	/*
