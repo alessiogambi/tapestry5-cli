@@ -30,6 +30,54 @@ public class CLIOption {
 		return shortOpt;
 	}
 
+	/**
+	 * Return true if the two provided option conflicts with the object.
+	 * 
+	 * Conflicting definitions are identified by the same short notation but
+	 * different long notation, or vice-versa; conflicting definitions are also
+	 * identified when the notations match but the expected number of parameters
+	 * differs
+	 * 
+	 * @param anotherOption
+	 * @return
+	 */
+	public boolean conflicts(CLIOption anotherOption) {
+		if (anotherOption == null) {
+			return false;
+		} else if (this.shortOpt.equals(anotherOption.shortOpt)
+				&& !this.longOpt.equals(anotherOption.longOpt)) {
+			return true;
+		} else if (!this.shortOpt.equals(anotherOption.shortOpt)
+				&& this.longOpt.equals(anotherOption.longOpt)) {
+			return true;
+		} else if (this.shortOpt.equals(anotherOption.shortOpt)
+				&& this.longOpt.equals(anotherOption.longOpt)
+				&& this.nArgs != anotherOption.nArgs) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Merge the CLIOption with the provided anotherOption
+	 * 
+	 * @param anotherOption
+	 */
+	public void merge(CLIOption anotherOption) {
+		if (anotherOption == null) {
+			return;
+		} else if (this.conflicts(anotherOption)) {
+			return;
+		} else {
+			// Append the Descriptions
+			this.description = String.format("%s. %s", this.description,
+					anotherOption.description);
+			// Pick the strongest requires
+			this.required = (this.required || anotherOption.required);
+		}
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
