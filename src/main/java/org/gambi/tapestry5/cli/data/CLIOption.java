@@ -60,7 +60,14 @@ public class CLIOption {
 	}
 
 	/**
-	 * Merge the CLIOption with the provided anotherOption
+	 * Merge the CLIOption with the provided anotherOption.
+	 * 
+	 * Definitions that have different descriptions, or different required
+	 * attributed are merged according to the following rule: Descriptions are
+	 * appended one after the other, while stronger requirements are maintained.
+	 * In other words, if two options with same notations and expected parameter
+	 * have different required attribute, the library forces the strictest one,
+	 * i.e., required.
 	 * 
 	 * @param anotherOption
 	 */
