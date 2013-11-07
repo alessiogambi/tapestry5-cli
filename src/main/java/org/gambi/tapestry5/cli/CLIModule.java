@@ -4,8 +4,8 @@ import java.util.Collection;
 
 import javax.validation.Validator;
 
-import org.apache.commons.cli.Option;
 import org.apache.tapestry5.ioc.ServiceBinder;
+import org.gambi.tapestry5.cli.data.CLIOption;
 import org.gambi.tapestry5.cli.services.ApplicationConfigurationSource;
 import org.gambi.tapestry5.cli.services.CLIParser;
 import org.gambi.tapestry5.cli.services.impl.ApplicationConfigurationSourceImpl;
@@ -49,6 +49,11 @@ import org.slf4j.Logger;
  */
 public class CLIModule {
 
+	/**
+	 * Auto build services
+	 * 
+	 * @category AutoBuild ApplicationConfigurationSource
+	 */
 	public static void bind(final ServiceBinder binder) {
 		binder.bind(ApplicationConfigurationSource.class,
 				ApplicationConfigurationSourceImpl.class);
@@ -56,6 +61,14 @@ public class CLIModule {
 
 	/**
 	 * Build the CLI Parser object to process the input data.
+	 * 
+	 * @param logger
+	 * @param applicationConfigurationSource
+	 * @param validator
+	 * @param options
+	 * @return CLIParser
+	 * 
+	 * @category Build CLIParser
 	 */
 	public CLIParser buildCLIParser(
 	/**
@@ -73,10 +86,9 @@ public class CLIModule {
 	/**
 	 * @category UserContributions
 	 */
-	Collection<Option> options) {
+	Collection<CLIOption> options) {
 
-		return new CLIParserImpl(logger, options,
-				applicationConfigurationSource, validator);
+		return new CLIParserImpl(logger, applicationConfigurationSource,
+				validator, options);
 	}
-
 }

@@ -13,9 +13,11 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.gambi.tapestry5.cli.data.ApplicationConfiguration;
+import org.gambi.tapestry5.cli.data.CLIOption;
 import org.gambi.tapestry5.cli.services.ApplicationConfigurationSource;
 import org.gambi.tapestry5.cli.services.CLIParser;
 import org.slf4j.Logger;
@@ -23,41 +25,72 @@ import org.slf4j.Logger;
 public class CLIParserImpl implements CLIParser {
 
 	private Logger logger;
-	// private Messages messages;
-
-	private Options configuration;
-
 	private ApplicationConfigurationSource applicationConfigurationSource;
-
 	private Validator validator;
 
-	// Internal implementation via commons cli
+	private Collection<CLIOption> cliOptions;
+
+	// Internal implementation
 	private CommandLineParser parser;
 	private CommandLine parsedOptions;
 
-	// Not sure this is the most beautiful way
+	// private Options configuration;
 
-	public CLIParserImpl(
-			Logger logger,
-			// Messages messages, // Apparently this cannot be injected so
-			// easily
-			Collection<Option> _options,
+	public CLIParserImpl(Logger logger,
 			ApplicationConfigurationSource applicationBeanSource,
-			Validator validator) {
+			Validator validator, Collection<CLIOption> _options) {
 
 		this.logger = logger;
-		// this.messages = messages;
-
-		this.configuration = new Options();
-		for (Option option : _options) {
-			configuration.addOption(option);
-		}
 		this.validator = validator;
 		this.applicationConfigurationSource = applicationBeanSource;
+
+		validateAndMerge(_options);
+	}
+
+	/**
+	 * 
+	 */
+	private void validateAndMerge(Collection<CLIOption> _options) {
+		// TODO Check for duplicate options and so..
+
+		// TODO Check for duplicate options and so..
+		this.cliOptions = _options;
+
+		logger.warn("Validation of User contribution is not yet implemented !");
+		// throw new
+		// IllegalArgumentException("Found conflicting CLIOptions, please revise your contributions !");
+		// this.configuration = new Options();
+		// for (Option option : _options) {
+		// configuration.addOption(option);
+		// }
+
+	}
+
+	/*
+	 * Initialize the objects to parse the command line
+	 * 
+	 * @return
+	 */
+	private Options setupParsing() {
+		Options configuration = new Options();
+		for (CLIOption cliOption : cliOptions) {
+
+			Option option = OptionBuilder.withLongOpt(cliOption.getLongOpt())
+					.hasArgs(cliOption.getnArgs())
+					.isRequired(cliOption.isRequired())
+					.withDescription(cliOption.getDescription())
+					.create(cliOption.getShortOpt());
+
+			logger.debug("Created option " + option);
+			configuration.addOption(option);
+		}
+		return configuration;
 	}
 
 	public void parse(String[] args) throws ParseException, ValidationException {
 		logger.debug("Parsing " + Arrays.toString(args));
+
+		Options configuration = setupParsing();
 		ApplicationConfiguration application = null;
 		try {
 			parser = new BasicParser();
