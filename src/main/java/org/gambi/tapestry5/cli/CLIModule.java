@@ -1,6 +1,5 @@
 package org.gambi.tapestry5.cli;
 
-import java.lang.reflect.Method;
 import java.util.Collection;
 
 import javax.validation.MessageInterpolator;
@@ -8,7 +7,6 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import javax.validation.groups.Default;
 
-import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.tapestry5.beanvalidator.BeanValidatorConfigurer;
 import org.apache.tapestry5.beanvalidator.BeanValidatorGroupSource;
@@ -17,15 +15,10 @@ import org.apache.tapestry5.internal.beanvalidator.BeanValidationGroupSourceImpl
 import org.apache.tapestry5.internal.beanvalidator.BeanValidatorSourceImpl;
 import org.apache.tapestry5.internal.beanvalidator.MessageInterpolatorImpl;
 import org.apache.tapestry5.ioc.Configuration;
-import org.apache.tapestry5.ioc.MethodAdviceReceiver;
 import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
-import org.apache.tapestry5.ioc.annotations.Advise;
 import org.apache.tapestry5.ioc.services.PropertyShadowBuilder;
 import org.apache.tapestry5.ioc.services.ThreadLocale;
-import org.apache.tapestry5.plastic.MethodAdvice;
-import org.apache.tapestry5.plastic.MethodInvocation;
-import org.gambi.tapestry5.cli.data.ApplicationConfiguration;
 import org.gambi.tapestry5.cli.services.ApplicationConfigurationSource;
 import org.gambi.tapestry5.cli.services.CLIParser;
 import org.gambi.tapestry5.cli.services.impl.ApplicationConfigurationSourceImpl;
@@ -77,6 +70,9 @@ public class CLIModule {
 	 * /tapestry-beanvalidator/src
 	 * /main/java/org/apache/tapestry5/beanvalidator/modules
 	 * /BeanValidatorModule.java
+	 * 
+	 * 
+	 * TODO Try the service override instead of the binding
 	 */
 
 	public static void bind(final ServiceBinder binder) {
