@@ -10,16 +10,16 @@ public class BeanWithURL {
 
 	@NotNull
 	@ValidURL
-	private URL theURL;
+	private String theURL;
 
 	public BeanWithURL() {
 	}
 
-	public URL getTheURL() {
+	public String getTheURL() {
 		return theURL;
 	}
 
-	public void setTheURL(URL theURL) {
+	public void setTheURL(String theURL) {
 		this.theURL = theURL;
 	}
 
