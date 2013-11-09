@@ -31,7 +31,6 @@ public class CLIOption {
 	@SuppressWarnings("static-access")
 	@Override
 	public String toString() {
-		// TODO Maybe not the best way of doing this ;
 		return OptionBuilder.withLongOpt(longOpt).hasArgs(nArgs)
 				.isRequired(required).withDescription(description)
 				.create(shortOpt).toString();
@@ -119,6 +118,7 @@ public class CLIOption {
 			return false;
 		}
 		CLIOption other = (CLIOption) obj;
+
 		if (longOpt == null) {
 			if (other.longOpt != null) {
 				return false;

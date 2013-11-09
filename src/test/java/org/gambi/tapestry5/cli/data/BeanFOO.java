@@ -7,7 +7,7 @@ public class BeanFOO {
 	public BeanFOO() {
 	}
 
-	@Min(value = 10)
+	@Min(value = 13)
 	private int alfa;
 
 	public int getAlfa() {
