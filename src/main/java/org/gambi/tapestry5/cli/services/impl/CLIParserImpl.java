@@ -55,14 +55,15 @@ public class CLIParserImpl implements CLIParser {
 		ArrayList<CLIOption> cliOptions = new ArrayList<CLIOption>();
 
 		for (CLIOption cliOption : _options) {
-			if (!cliOptions.contains(_options)) {
-				logger.debug("Adding " + _options);
+
+			if (!cliOptions.contains(cliOption)) {
+				logger.debug("Adding " + cliOption);
 				cliOptions.add(cliOption);
 			} else {
-				logger.debug("Merging options "
-						+ cliOptions.get(cliOptions.indexOf(_options))
+				logger.info("\t Merging options "
+						+ cliOptions.get(cliOptions.indexOf(cliOption))
 						+ " with " + cliOption);
-				cliOptions.get(cliOptions.indexOf(_options)).merge(cliOption);
+				cliOptions.get(cliOptions.indexOf(cliOption)).merge(cliOption);
 			}
 		}
 
