@@ -5,11 +5,13 @@ import java.util.Collection;
 import javax.validation.Validator;
 
 import org.apache.tapestry5.ioc.ServiceBinder;
+import org.apache.tapestry5.ioc.annotations.SubModule;
 import org.gambi.tapestry5.cli.data.CLIOption;
-import org.gambi.tapestry5.cli.services.ApplicationConfigurationSource;
+import org.gambi.tapestry5.cli.modules.AdditionalCoercions;
 import org.gambi.tapestry5.cli.services.CLIParser;
-import org.gambi.tapestry5.cli.services.impl.ApplicationConfigurationSourceImpl;
 import org.gambi.tapestry5.cli.services.impl.CLIParserImpl;
+import org.gambi.tapestry5.cli.services.internals.ApplicationConfigurationSource;
+import org.gambi.tapestry5.cli.services.internals.impl.ApplicationConfigurationSourceImpl;
 import org.slf4j.Logger;
 
 /*
@@ -47,6 +49,8 @@ import org.slf4j.Logger;
  * 
  * @category Module
  */
+
+@SubModule({ AdditionalCoercions.class })
 public class CLIModule {
 
 	/**
