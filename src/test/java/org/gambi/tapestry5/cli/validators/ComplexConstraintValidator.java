@@ -1,11 +1,13 @@
 package org.gambi.tapestry5.cli.validators;
 
+import java.util.Arrays;
+
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 import org.gambi.tapestry5.cli.annotations.ComplexValidationConstraint;
 import org.gambi.tapestry5.cli.data.NestedBean;
-import org.gambi.tapestry5.cli.services.ApplicationConfigurationSource;
+import org.gambi.tapestry5.cli.services.internals.ApplicationConfigurationSource;
 
 /**
  * This class is an example of implementation of a complex constraint specified
@@ -36,8 +38,9 @@ public class ComplexConstraintValidator implements
 
 		try {
 			System.out.println("ComplexConstraintValidator.isValid() ? ");
-			System.out.println(bean.getBeanA().getBeta().length() + "+"
-					+ bean.getVectorBean().getVector()[0].length());
+
+			System.out.println(bean.getBeanA().getBeta().length() + "\n"
+					+ Arrays.toString(bean.getVectorBean().getVector()));
 
 			return (bean.getBeanA().getBeta() + bean.getVectorBean()
 					.getVector()[0]).length() < 20;

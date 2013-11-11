@@ -14,6 +14,14 @@ public class ComplexConstraintModule {
 	 * @param configuration
 	 */
 	public void contributeCLIParser(Configuration<CLIOption> configuration) {
+
+		configuration.add(new CLIOption("a", "alfa", 1, true,
+				"alfa-description"));
+		configuration.add(new CLIOption("b", "beta", 1, true,
+				"beta-description"));
+		configuration
+				.add(new CLIOption("g", "gamma", 1, false, "This is gamma"));
+
 		configuration.add(new CLIOption("d", "delta", 1, true, "A delta"));
 		configuration.add(new CLIOption("v", "vector", 3, true,
 				"Vector must have 3 elements !"));

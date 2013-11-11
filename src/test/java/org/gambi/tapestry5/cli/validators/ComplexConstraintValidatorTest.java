@@ -8,7 +8,6 @@ import org.apache.tapestry5.ioc.RegistryBuilder;
 import org.gambi.tapestry5.cli.CLIModule;
 import org.gambi.tapestry5.cli.data.CLIOption;
 import org.gambi.tapestry5.cli.modules.ComplexConstraintModule;
-import org.gambi.tapestry5.cli.modules.TestModule;
 import org.gambi.tapestry5.cli.services.CLIParser;
 import org.junit.After;
 import org.junit.Assert;
@@ -28,8 +27,6 @@ public class ComplexConstraintValidatorTest {
 
 		// Load all the local modules
 		builder.add(CLIModule.class);
-		// Add the test module
-		builder.add(TestModule.class);
 		// Add the Complex test module
 		builder.add(ComplexConstraintModule.class);
 
@@ -75,23 +72,23 @@ public class ComplexConstraintValidatorTest {
 	public void okOptions() {
 		CLIParser parser = registry.getService(CLIParser.class);
 		String[] args = new String[] { "-a", "100", "-d", "10", "--beta",
-				"ciccio", "-g", "gamma", "--epsilon", "12", "-d", "15", "-v",
+				"cicc", "-g", "gamma", "--epsilon", "12", "-d", "15", "-v",
 				"1", "2", "1", "13", "50" };
 
 		try {
 			parser.parse(args);
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 			Assert.fail("Exception " + e.getMessage());
 		}
 	}
 
-	// @Test
+	@Test
 	public void koOptions() {
 		CLIParser parser = registry.getService(CLIParser.class);
-		String[] args = new String[] { "-a", "100", "--beta", "-g", "gamma",
-				"--epsilon", "12", "-d", "15", "first-arg", "-v", "1", "2",
-				"blabl4", "second-args", "whaterver" };
+		String[] args = new String[] { "-a", "100", "--beta", "cicc", "-g",
+				"gamma", "--epsilon", "12", "-d", "15", "first-arg", "-v", "1",
+				"2", "blabl4", "second-args", "whaterver" };
 		try {
 			parser.parse(args);
 		} catch (Exception e) {

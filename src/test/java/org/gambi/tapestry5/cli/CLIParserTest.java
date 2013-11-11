@@ -82,7 +82,8 @@ public class CLIParserTest {
 			parser.parse(args);
 		} catch (Exception e) {
 			// e.printStackTrace();
-			Assert.fail();
+			Assert.fail("Exception was generated");
+			return;
 		}
 
 		SymbolSource symbolSource = registry.getService(SymbolSource.class);
