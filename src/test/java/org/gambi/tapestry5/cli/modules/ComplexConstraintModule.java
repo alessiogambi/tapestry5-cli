@@ -23,6 +23,7 @@ public class ComplexConstraintModule {
 				.add(new CLIOption("g", "gamma", 1, false, "This is gamma"));
 
 		configuration.add(new CLIOption("d", "delta", 1, true, "A delta"));
+
 		configuration.add(new CLIOption("v", "vector", 3, true,
 				"Vector must have 3 elements !"));
 

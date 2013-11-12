@@ -31,7 +31,6 @@ public class BeanA {
 	}
 
 	public long getEpsilon() {
-		System.out.println("BeanA.getEpsilon() " + epsilon);
 		return epsilon;
 	}
 
