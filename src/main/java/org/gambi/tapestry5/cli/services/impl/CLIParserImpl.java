@@ -1,5 +1,6 @@
 package org.gambi.tapestry5.cli.services.impl;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -20,7 +21,9 @@ import org.apache.commons.cli.ParseException;
 import org.gambi.tapestry5.cli.data.ApplicationConfiguration;
 import org.gambi.tapestry5.cli.data.CLIOption;
 import org.gambi.tapestry5.cli.services.CLIParser;
+import org.gambi.tapestry5.cli.services.CLIValidator;
 import org.gambi.tapestry5.cli.services.internals.ApplicationConfigurationSource;
+import org.gambi.tapestry5.cli.utils.CLIDefaultOptions;
 import org.slf4j.Logger;
 
 public class CLIParserImpl implements CLIParser {
@@ -28,28 +31,65 @@ public class CLIParserImpl implements CLIParser {
 	private Logger logger;
 	private ApplicationConfigurationSource applicationConfigurationSource;
 	private Validator validator;
+	private CLIValidator cliValidator;
 
+	// User Contributions
 	private Collection<CLIOption> cliOptions;
+	private String commandName;
 
 	// Internal implementation
 	private CommandLineParser parser;
 	private CommandLine parsedOptions;
-
-	// private Options configuration;
+	private HelpFormatter formatter;
+	private PrintWriter pw;
 
 	public CLIParserImpl(Logger logger,
 			ApplicationConfigurationSource applicationBeanSource,
-			Validator validator, Collection<CLIOption> _options) {
+			Validator validator, CLIValidator cliValidator, String commandName,
+			Collection<CLIOption> _options) {
 
 		this.logger = logger;
 		this.validator = validator;
 		this.applicationConfigurationSource = applicationBeanSource;
 
+		this.commandName = commandName;
+		this.cliValidator = cliValidator;
+
+		formatter = new HelpFormatter();
+		pw = new PrintWriter(System.out);
+
 		validateAndMerge(_options);
 	}
 
 	/**
-	 * 
+	 * Print the help message and call System.exit
+	 */
+	// FIXME Kind of bad !
+	private void prindUsageAndExit(String[] args) {
+		final Options options = setupParsing();
+		try {
+			// THIS IS TAKEN FROM
+			// http://stackoverflow.com/questions/14309467/how-can-i-avoid-a-parserexception-for-required-options-when-user-just-wants-to-p
+			final Options helpOptions = new Options();
+
+			helpOptions.addOption(CLIDefaultOptions.HELP_OPTION);
+			CommandLine tmpLine = parser.parse(helpOptions, args, true);
+			if (tmpLine.hasOption(CLIDefaultOptions.HELP_OPTION.getLongOpt())) {
+
+				formatter.printHelp(commandName, options);
+				// TODO !!
+				System.exit(0);
+			}
+		} catch (Exception e) {
+			logger.error("", e);
+			formatter.printHelp(commandName, options);
+			// TODO
+			System.exit(1);
+		}
+	}
+
+	/**
+	 * This check for duplicate entries and merge the ones that can be merged
 	 */
 	private void validateAndMerge(Collection<CLIOption> _options) {
 		ArrayList<CLIOption> cliOptions = new ArrayList<CLIOption>();
