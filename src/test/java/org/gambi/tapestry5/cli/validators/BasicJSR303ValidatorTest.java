@@ -17,8 +17,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.w3c.dom.css.RGBColor;
 
+/**
+ * This class tests the ValidURL custom JSR303 validator.
+ * 
+ * @author alessiogambi
+ * 
+ */
 public class BasicJSR303ValidatorTest {
 
 	private Registry registry;

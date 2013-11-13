@@ -19,8 +19,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.gambi.tapestry5.cli.data.ApplicationConfiguration;
 import org.gambi.tapestry5.cli.data.CLIOption;
-import org.gambi.tapestry5.cli.services.ApplicationConfigurationSource;
 import org.gambi.tapestry5.cli.services.CLIParser;
+import org.gambi.tapestry5.cli.services.internals.ApplicationConfigurationSource;
 import org.slf4j.Logger;
 
 public class CLIParserImpl implements CLIParser {
@@ -55,14 +55,15 @@ public class CLIParserImpl implements CLIParser {
 		ArrayList<CLIOption> cliOptions = new ArrayList<CLIOption>();
 
 		for (CLIOption cliOption : _options) {
-			if (!cliOptions.contains(_options)) {
-				logger.debug("Adding " + _options);
+
+			if (!cliOptions.contains(cliOption)) {
+				logger.debug("Adding " + cliOption);
 				cliOptions.add(cliOption);
 			} else {
-				logger.debug("Merging options "
-						+ cliOptions.get(cliOptions.indexOf(_options))
+				logger.info("\t Merging options "
+						+ cliOptions.get(cliOptions.indexOf(cliOption))
 						+ " with " + cliOption);
-				cliOptions.get(cliOptions.indexOf(_options)).merge(cliOption);
+				cliOptions.get(cliOptions.indexOf(cliOption)).merge(cliOption);
 			}
 		}
 
@@ -134,7 +135,17 @@ public class CLIParserImpl implements CLIParser {
 
 				Set<ConstraintViolation<Object>> result = validator
 						.validate(property);
+				System.out.println("CLIParserImpl.validate() property : "
+						+ property.toString());
+
 				for (ConstraintViolation<Object> viol : result) {
+
+					System.out.println("CLIParserImpl.validate() : "
+							+ viol.getInvalidValue());
+					System.out.println("CLIParserImpl.validate() : "
+							+ viol.getPropertyPath());
+					System.out.println("CLIParserImpl.validate() : "
+							+ viol.getConstraintDescriptor().getAnnotation());
 					System.out.println("CLIParserImpl.validate() : "
 							+ viol.getMessage());
 				}
@@ -166,10 +177,13 @@ public class CLIParserImpl implements CLIParser {
 				String symbolValue = option.getValue();
 				System.out.println("CLIParserImpl.parse(): Exporting "
 						+ symbolName + " == " + symbolValue);
-				System.getProperties().put(symbolName, symbolValue);
+
+				if (symbolValue != null) {
+					System.getProperties().put(symbolName, symbolValue);
+				}
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (Throwable e) {
+			throw new ValidationException("Generic Error : " + e);
 		}
 	}
 }
