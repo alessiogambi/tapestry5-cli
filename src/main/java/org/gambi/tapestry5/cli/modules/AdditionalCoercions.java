@@ -1,6 +1,7 @@
 package org.gambi.tapestry5.cli.modules;
 
 import java.net.URL;
+import java.util.Arrays;
 
 import org.apache.tapestry5.ioc.Configuration;
 import org.apache.tapestry5.ioc.services.Coercion;
@@ -75,5 +76,45 @@ public class AdditionalCoercions {
 		configuration.add(new CoercionTuple<String, String[]>(String.class,
 				String[].class, stringToStringArray));
 
+		Coercion<char[], String> charsToString = new Coercion<char[], String>() {
+
+			public String coerce(char[] arg0) {
+				System.out.println("\n\n Coercing char[]: "
+						+ Arrays.toString(arg0) + " to String");
+
+				StringBuffer result = new StringBuffer();
+
+				for (char c : arg0) {
+					result.append(c);
+				}
+
+				return result.toString();
+			}
+		};
+		configuration.add(new CoercionTuple<char[], String>(char[].class,
+				String.class, charsToString));
+
+		Coercion<char[][], String[]> charMatrixToStringArray = new Coercion<char[][], String[]>() {
+
+			public String[] coerce(char[][] arg0) {
+				System.out.println("\n\n Coercing char[][]: " + arg0
+						+ " to String[]");
+
+				String[] result = new String[arg0.length];
+
+				for (int i = 0; i < arg0.length; i++) {
+					char[] word = arg0[i];
+					StringBuffer _result = new StringBuffer();
+					for (char c : word) {
+						_result.append(c);
+					}
+					result[i] = _result.toString();
+				}
+
+				return result;
+			}
+		};
+		configuration.add(new CoercionTuple<char[][], String[]>(char[][].class,
+				String[].class, charMatrixToStringArray));
 	}
 }

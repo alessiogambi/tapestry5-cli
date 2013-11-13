@@ -196,13 +196,11 @@ public class ApplicationConfigurationSourceImpl implements
 
 			// Transform back to String. This is necessary because the
 			// target property may not be a String[]
-			
-			
-			
-			logger.debug("Coercing " + Arrays.toString(values) );
-			
-			value = typeCoercer.coerce(Arrays.toString(values),
-					descriptor.getPropertyType());
+
+			logger.debug("\n\nCoercing " + values + " to "
+					+ descriptor.getPropertyType().getCanonicalName());
+
+			value = typeCoercer.coerce(values, descriptor.getPropertyType());
 		} else {
 			// logger.debug("Single Argument option");
 			logger.debug("Assign value " + option.getValue() + " to "
