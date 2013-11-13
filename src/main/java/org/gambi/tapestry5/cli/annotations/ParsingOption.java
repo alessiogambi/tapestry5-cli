@@ -5,6 +5,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * TODO:
+ * "Avoid to specify new options with Annotations. It is better to have them provided"
+ * 
+ * @author alessiogambi
+ * 
+ */
+@Deprecated()
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
 public @interface ParsingOption {
