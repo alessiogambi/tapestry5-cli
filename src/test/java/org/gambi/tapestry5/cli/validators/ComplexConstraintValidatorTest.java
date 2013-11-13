@@ -41,7 +41,7 @@ public class ComplexConstraintValidatorTest {
 		}
 	}
 
-	// @Test
+	@Test
 	public void containsTest() {
 		ArrayList<CLIOption> options = new ArrayList<CLIOption>();
 
@@ -87,8 +87,9 @@ public class ComplexConstraintValidatorTest {
 	public void koOptions() {
 		CLIParser parser = registry.getService(CLIParser.class);
 		String[] args = new String[] { "-a", "100", "--beta", "cicc", "-g",
-				"gamma", "--epsilon", "12", "-d", "15", "first-arg", "-v", "1",
-				"2", "blabl4", "second-args", "whaterver" };
+				"gamma", "--epsilon", "12", "-d", "15", "first-arg", "-v",
+				"a-very-longhish-parameters-that-is-not goood", "short", "blabl4", "second-args",
+				"whaterver" };
 		try {
 			parser.parse(args);
 		} catch (Exception e) {

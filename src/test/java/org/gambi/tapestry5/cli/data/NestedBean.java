@@ -10,7 +10,7 @@ public class NestedBean {
 
 	// Force a cascade validation
 	@Valid
-	@NotNull
+	// @NotNull
 	public BeanA beanA;
 
 	// Force a cascade validation

@@ -35,19 +35,36 @@ public class ComplexConstraintValidator implements
 
 	public boolean isValid(NestedBean bean,
 			ConstraintValidatorContext paramConstraintValidatorContext) {
+		if (bean == null) {
+			System.out
+					.println("ComplexConstraintValidator.isValid() bean == null) {");
+			return true;
+		} else if (bean.getBeanA() == null) {
+			System.out
+					.println("ComplexConstraintValidator.isValid() bean.getBeanA() == null) {");
+			return true;
+		} else if (bean.getVectorBean() == null) {
+			System.out
+					.println("ComplexConstraintValidator.isValid() (bean.getVectorBean() == null) {");
+			return true;
+		} else {
+			try {
+				System.out
+						.println("ComplexConstraintValidator.isValid() TOT : "
+								+ (bean.getBeanA().getBeta() + bean
+										.getVectorBean().getVector()[0])
+										.length());
 
-		try {
-			System.out.println("ComplexConstraintValidator.isValid() ? ");
-
-			System.out.println(bean.getBeanA().getBeta().length() + "\n"
-					+ Arrays.toString(bean.getVectorBean().getVector()));
-
-			return (bean.getBeanA().getBeta() + bean.getVectorBean()
-					.getVector()[0]).length() < 20;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
+				return (bean.getBeanA().getBeta() + bean.getVectorBean()
+						.getVector()[0]).length() < 20;
+			} catch (NullPointerException e) {
+				System.out
+						.println("ComplexConstraintValidator.isValid() NullPointerException");
+				return true;
+			} catch (Exception e) {
+				e.printStackTrace();
+				return false;
+			}
 		}
 	}
-
 }

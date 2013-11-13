@@ -22,15 +22,30 @@ public class ComplexConstraintModule {
 		configuration
 				.add(new CLIOption("g", "gamma", 1, false, "This is gamma"));
 
-		configuration.add(new CLIOption("d", "delta", 1, true, "A delta"));
+		configuration.add(new CLIOption("d", "delta", 1, false, "A delta"));
 
-		configuration.add(new CLIOption("v", "vector", 3, true,
+		configuration.add(new CLIOption("v", "vector", 3, false,
 				"Vector must have 3 elements !"));
 
-		configuration.add(new CLIOption("e", "epsilon", 1, true, "epsilon"));
+		configuration.add(new CLIOption("e", "epsilon", 1, false, "epsilon"));
 
 		configuration.add(new CLIOption("g", "gamma", 1, true,
 				"This is anothre definition of gamma"));
+
+		configuration.add(new CLIOption("su", "string-url", 1, false,
+				"string-url"));
+
+		configuration.add(new CLIOption("u", "an-url", 1, false,
+				"This is another URL"));
+
+		configuration.add(new CLIOption("o", "orsu", 1, false,
+				"This is another URL"));
+
+		configuration.add(new CLIOption("j", "jonny", 0, false,
+				"This is another URL"));
+
+		configuration.add(new CLIOption("t", "tommy", 1, false,
+				"This is another URL"));
 
 	}
 
