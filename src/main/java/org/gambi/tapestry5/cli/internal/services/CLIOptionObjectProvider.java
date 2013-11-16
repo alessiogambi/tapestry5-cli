@@ -14,13 +14,13 @@ import org.gambi.tapestry5.cli.services.CLIOptionSource;
  * Performs an injection based on a {@link CLIObject} annotation. This is a
  * replica of the (internal) {@link SymbolObjectProvider} service.
  */
-public class CLIObjectProvider implements ObjectProvider {
+public class CLIOptionObjectProvider implements ObjectProvider {
 
 	private final CLIOptionSource optionSource;
 
 	private final TypeCoercer typeCoercer;
 
-	public CLIObjectProvider(
+	public CLIOptionObjectProvider(
 			@Builtin CLIOptionSource optionSource,
 			@Builtin TypeCoercer typeCoercer) {
 		this.optionSource = optionSource;

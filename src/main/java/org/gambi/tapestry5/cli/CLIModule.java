@@ -16,9 +16,10 @@ import org.apache.tapestry5.ioc.services.Builtin;
 import org.apache.tapestry5.ioc.services.MasterObjectProvider;
 import org.apache.tapestry5.ioc.services.PipelineBuilder;
 import org.gambi.tapestry5.cli.data.CLIOption;
-import org.gambi.tapestry5.cli.internal.services.CLIObjectProvider;
-import org.gambi.tapestry5.cli.internal.services.InputObjectProvider;
+import org.gambi.tapestry5.cli.internal.services.CLIOptionObjectProvider;
+import org.gambi.tapestry5.cli.internal.services.CLIInputObjectProvider;
 import org.gambi.tapestry5.cli.modules.AdditionalCoercions;
+import org.gambi.tapestry5.cli.services.CLIOptionProvider;
 import org.gambi.tapestry5.cli.services.CLIOptionSource;
 import org.gambi.tapestry5.cli.services.CLIParser;
 import org.gambi.tapestry5.cli.services.CLIValidator;
@@ -74,7 +75,7 @@ public class CLIModule {
 	/**
 	 * Auto build services
 	 * 
-	 * @category AutoBuild ApplicationConfigurationSource
+	 * @category AutoBuild ApplicationConfigurationSource CLIOptionSource
 	 */
 	@SuppressWarnings("unchecked")
 	public static void bind(final ServiceBinder binder) {
@@ -191,10 +192,25 @@ public class CLIModule {
 	public static void setupObjectProviders(
 			OrderedConfiguration<ObjectProvider> configuration) {
 
-		configuration.addInstance("CLIOption", CLIObjectProvider.class,
+		configuration.addInstance("CLIOption", CLIOptionObjectProvider.class,
 				"before:AnnotationBasedContributions");
 
-		configuration.addInstance("CLIInput", InputObjectProvider.class,
+		configuration.addInstance("CLIInput", CLIInputObjectProvider.class,
 				"before:AnnotationBasedContributions");
 	}
+
+	/**
+	 * Contribute the CLIOption/CLIInput service providers
+	 * 
+	 * @param providers
+	 * 
+	 * @category UserContributions CLIOptionSource
+	 */
+	@Contribute(CLIOptionSource.class)
+	public static void setupCLIOptionProviders(
+
+	OrderedConfiguration<CLIOptionProvider> providers) {
+
+	}
+
 }
