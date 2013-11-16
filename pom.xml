@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.gambi</groupId>
 	<artifactId>tapestry5-cli</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1-SNAPSHOT</version>
 
 	<contributors>
 		<contributor>
@@ -13,6 +13,21 @@
 			<url>http://www.inf.usi.ch/phd/gambi/</url>
 		</contributor>
 	</contributors>
+
+	<distributionManagement>
+		<repository>
+			<id>infosys-repo</id>
+			<name>infosys-repo</name>
+			<uniqueVersion>false</uniqueVersion>
+			<url>scp://128.131.172.98/web/website/mvn</url>
+		</repository>
+		<snapshotRepository>
+			<id>infosys-repo</id>
+			<name>infosys-repo</name>
+			<url>scp://128.131.172.98/web/website/mvn</url>
+			<uniqueVersion>false</uniqueVersion>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<dependencies>
 
@@ -46,15 +61,25 @@
 		</dependency>
 
 		<!-- Input Validation -->
+        <!-- The code available in the git project is working fine, however the published maven dep is broken.
+        This requires the infosys repo -->
 		<dependency>
 			<groupId>org.apache.tapestry</groupId>
-			<artifactId>tapestry-beanvalidator</artifactId>
-			<version>5.3.7</version>
+			<artifactId>tapestry-simple-beanvalidator</artifactId>
+			<version>5.3.7-SNAPSHOT</version>
 		</dependency>
 
 	</dependencies>
 
 	<build>
+        <!-- For easy distribution management -->
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ssh</artifactId>
+				<version>1.0-beta-6</version>
+			</extension>
+		</extensions>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -72,16 +97,22 @@
 				<configuration>
 					<archive>
 						<manifestEntries>
-							<Tapestry-Module-Classes>org.gambi.tapestry5.modules.cli.CLIModule</Tapestry-Module-Classes>
+							<Tapestry-Module-Classes>org.gambi.tapestry5.cli.CLIModule</Tapestry-Module-Classes>
 						</manifestEntries>
 					</archive>
 				</configuration>
 			</plugin>
-
-
-
 		</plugins>
 	</build>
+
+	<repositories>
+		<repository>
+			<name>Infosys Repo</name>
+			<id>infosys-repo</id>
+			<url>http://www.infosys.tuwien.ac.at/mvn</url>
+		</repository>
+	</repositories>
+
 	<properties>
 		<tapestry-version>5.3.7</tapestry-version>
 	</properties>

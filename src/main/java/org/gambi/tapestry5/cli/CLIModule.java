@@ -1,28 +1,39 @@
 package org.gambi.tapestry5.cli;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
-import javax.validation.MessageInterpolator;
 import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
-import javax.validation.groups.Default;
 
-import org.apache.commons.cli.Option;
-import org.apache.tapestry5.beanvalidator.BeanValidatorConfigurer;
-import org.apache.tapestry5.beanvalidator.BeanValidatorGroupSource;
-import org.apache.tapestry5.beanvalidator.BeanValidatorSource;
-import org.apache.tapestry5.internal.beanvalidator.BeanValidationGroupSourceImpl;
-import org.apache.tapestry5.internal.beanvalidator.BeanValidatorSourceImpl;
-import org.apache.tapestry5.internal.beanvalidator.MessageInterpolatorImpl;
-import org.apache.tapestry5.ioc.Configuration;
+import org.apache.tapestry5.ioc.ObjectProvider;
 import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
-import org.apache.tapestry5.ioc.services.PropertyShadowBuilder;
-import org.apache.tapestry5.ioc.services.ThreadLocale;
-import org.gambi.tapestry5.cli.services.ApplicationConfigurationSource;
+import org.apache.tapestry5.ioc.annotations.Contribute;
+import org.apache.tapestry5.ioc.annotations.InjectService;
+import org.apache.tapestry5.ioc.annotations.SubModule;
+import org.apache.tapestry5.ioc.annotations.Symbol;
+import org.apache.tapestry5.ioc.services.Builtin;
+import org.apache.tapestry5.ioc.services.MasterObjectProvider;
+import org.apache.tapestry5.ioc.services.PipelineBuilder;
+import org.gambi.tapestry5.cli.data.CLIOption;
+import org.gambi.tapestry5.cli.modules.AdditionalCoercions;
+import org.gambi.tapestry5.cli.services.CLIOptionProvider;
+import org.gambi.tapestry5.cli.services.CLIOptionSource;
 import org.gambi.tapestry5.cli.services.CLIParser;
-import org.gambi.tapestry5.cli.services.impl.ApplicationConfigurationSourceImpl;
+import org.gambi.tapestry5.cli.services.CLIValidator;
+import org.gambi.tapestry5.cli.services.CLIValidatorFilter;
+import org.gambi.tapestry5.cli.services.impl.CLIOptionSourceImpl;
 import org.gambi.tapestry5.cli.services.impl.CLIParserImpl;
+import org.gambi.tapestry5.cli.services.impl.CLIValidatorFilterImpl;
+import org.gambi.tapestry5.cli.services.impl.DefaullCLIValidatorFilter;
+import org.gambi.tapestry5.cli.services.internal.ApplicationConfigurationSource;
+import org.gambi.tapestry5.cli.services.internal.BridgeCLIOptionProvider;
+import org.gambi.tapestry5.cli.services.internal.CLIInputObjectProvider;
+import org.gambi.tapestry5.cli.services.internal.CLIOptionObjectProvider;
+import org.gambi.tapestry5.cli.services.internal.impl.ApplicationConfigurationSourceImpl;
+import org.gambi.tapestry5.cli.services.internal.impl.BridgeCLIOptionProviderImpl;
+import org.gambi.tapestry5.cli.utils.CLISymbolConstants;
 import org.slf4j.Logger;
 
 /*
@@ -57,90 +68,161 @@ import org.slf4j.Logger;
  * We adopt this solution because symbol names are case insensitive.
  * 
  * @author alessiogambi
+ * 
+ * @category Module
  */
+
+@SubModule({ AdditionalCoercions.class })
 public class CLIModule {
 
-	/*
-	 * FIXME Ideally we should just add the BeanValidationModule as submodule to
-	 * have everything working. However, by doing so we end up generating
-	 * exceptions at startup because of an unknown problem. Therefore the
-	 * solution here is to "recreate" what we need from the original
-	 * BeanValidationModule.class: <br/>
-	 * https://raw.github.com/apache/tapestry-5/master
-	 * /tapestry-beanvalidator/src
-	 * /main/java/org/apache/tapestry5/beanvalidator/modules
-	 * /BeanValidatorModule.java
+	/**
+	 * Auto build services
 	 * 
-	 * 
-	 * TODO Try the service override instead of the binding
+	 * @category AutoBuild ApplicationConfigurationSource CLIOptionSource
 	 */
-
+	@SuppressWarnings("unchecked")
 	public static void bind(final ServiceBinder binder) {
-		binder.bind(BeanValidatorGroupSource.class,
-				BeanValidationGroupSourceImpl.class);
-		binder.bind(BeanValidatorSource.class, BeanValidatorSourceImpl.class);
 		binder.bind(ApplicationConfigurationSource.class,
 				ApplicationConfigurationSourceImpl.class);
+
+		/*
+		 * Note that we MUST mark this with the Builtin annotation
+		 */
+		binder.bind(CLIOptionSource.class, CLIOptionSourceImpl.class)
+				.withMarker(Builtin.class);
+
 	}
 
-	/*
-	 * Build the validator service
-	 */
-	public static Validator buildBeanValidator(
-			ValidatorFactory validatorFactory,
-			// Che e' il Prop Shadow Builder ?!!
-			PropertyShadowBuilder propertyShadowBuilder) {
-		return propertyShadowBuilder.build(validatorFactory, "validator",
-				Validator.class);
-	}
-
-	public static ValidatorFactory buildValidatorFactory(
-			BeanValidatorSource beanValidatorSource,
-			PropertyShadowBuilder propertyShadowBuilder) {
-		return propertyShadowBuilder.build(beanValidatorSource,
-				"validatorFactory", ValidatorFactory.class);
-	}
-
-	public static void contributeBeanValidatorGroupSource(
-			final Configuration<Class> configuration) {
-		configuration.add(Default.class);
-	}
-
-	public static void contributeBeanValidatorSource(
-			final OrderedConfiguration<BeanValidatorConfigurer> configuration,
-			final ThreadLocale threadLocale) {
-		configuration.add("LocaleAwareMessageInterpolator",
-				new BeanValidatorConfigurer() {
-					public void configure(
-							javax.validation.Configuration<?> configuration) {
-						MessageInterpolator defaultInterpolator = configuration
-								.getDefaultMessageInterpolator();
-
-						configuration
-								.messageInterpolator(new MessageInterpolatorImpl(
-										defaultInterpolator, threadLocale));
-					}
-				});
-	}
-
-	/*
-	 * Build the CLI Parser object to process the input data
+	/**
+	 * Build the CLI Parser object to process the input data.
+	 * 
+	 * @param logger
+	 * @param applicationConfigurationSource
+	 * @param validator
+	 * @param options
+	 * @return CLIParser
+	 * 
+	 * @category Build CLIParser
 	 */
 	public CLIParser buildCLIParser(
-	// Resources
-			Logger logger,
-			// Apparently this cannot be injected so easily !
-			// Messages messages,
-			// Distributed Configurations
-			Collection<Option> options,
-			// Services
-			ApplicationConfigurationSource applicationConfigurationSource,
-			// TODO Now this is the JSR303 validator, but shouldn't we use the
-			// T5 validator (which eventually contains the JSR one?)
-			Validator validator) {
+	/**
+	 * @category Resource
+	 */
+	Logger logger,
+	/**
+	 * @category Symbol UserContributions
+	 */
+	@Symbol(CLISymbolConstants.COMMAND_NAME) String commandName,
+	/**
+	 * @category Service CLIModule
+	 */
+	ApplicationConfigurationSource applicationConfigurationSource,
+	/**
+	 * @category Service SimpleValidatorModule
+	 */
+	Validator validator,
+	/**
+	 * @category Service CLIValidator
+	 */
+	CLIValidator cliValidator,
+	/**
+	 * @category Service BridgeCLIOptionProvider
+	 */
+	BridgeCLIOptionProvider bridgeCLIOptionProvider,
+	/**
+	 * @category UserContributions
+	 */
+	Collection<CLIOption> options) {
 
-		return new CLIParserImpl(logger, options,
-				applicationConfigurationSource, validator);
+		return new CLIParserImpl(logger, applicationConfigurationSource,
+				validator, cliValidator, commandName, bridgeCLIOptionProvider,
+				options);
+	}
+
+	/**
+	 * Build the second validation layer as a sequence of CLIValidators
+	 * 
+	 * 
+	 * @param commands
+	 * @param chainBuilder
+	 * @return
+	 * 
+	 * @category Build CLIValidator
+	 */
+	public static CLIValidator build(
+	/**
+	 * @category Resource
+	 */
+	Logger logger,
+	/**
+	 * Add the CLIOption and CLIInput annotation provider. This code is taken
+	 * from {@link TapestryIOCModule}.
+	 * 
+	 * <dl>
+	 * <dt>CLIOption</dt>
+	 * <dd>Supports the {@link org.gambi.tapestry5.cli.annotations.CLIOption}
+	 * annotations</dd>
+	 * <dt>CLIInput</dt>
+	 * <dd>Supports the {@link org.gambi.tapestry5.cli.annotations.CLIInput}
+	 * annotations</dd>
+	 * </dl>
+	 */
+	PipelineBuilder pipe,
+	/**
+	 * @category UserContributions
+	 */
+	List<CLIValidator> contributions) {
+
+		/*
+		 * This is a trick to force a specific sequence of filters: we use the
+		 * contributions to define an standard class that acts as the filter
+		 */
+		List<CLIValidatorFilter> filters = new ArrayList<CLIValidatorFilter>();
+		for (CLIValidator cliValidator : contributions) {
+			filters.add(new CLIValidatorFilterImpl(logger, cliValidator));
+		}
+
+		// Define the terminator filter
+		filters.add(new DefaullCLIValidatorFilter());
+
+		return pipe.build(logger, CLIValidator.class, CLIValidatorFilter.class,
+				filters);
+	}
+
+	/**
+	 * Contribute the CLIOption/CLIInput injection services
+	 * 
+	 * @param configuration
+	 * 
+	 * @category UserContributions MasterObjectProvider
+	 */
+	@Contribute(MasterObjectProvider.class)
+	public static void setupObjectProviders(
+			OrderedConfiguration<ObjectProvider> configuration) {
+
+		configuration.addInstance("CLIOption", CLIOptionObjectProvider.class,
+				"before:AnnotationBasedContributions");
+
+		configuration.addInstance("CLIInput", CLIInputObjectProvider.class,
+				"before:AnnotationBasedContributions");
+	}
+
+	/**
+	 * Contribute the CLIOption/CLIInput service providers
+	 * 
+	 * @param providers
+	 * 
+	 * @category UserContributions CLIOptionSource
+	 */
+	@Contribute(CLIOptionSource.class)
+	public static void setupCLIOptionProviders(
+			@InjectService("BridgeCLIOptionProvider") CLIOptionProvider bridgeCLIOptionProvider,
+			OrderedConfiguration<CLIOptionProvider> providers) {
+		providers.add("Bridge", bridgeCLIOptionProvider, "");
+	}
+
+	public BridgeCLIOptionProvider build() {
+		return new BridgeCLIOptionProviderImpl();
 	}
 
 }

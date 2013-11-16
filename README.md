@@ -1,13 +1,14 @@
 tapestry5-cli
 =============
 
-A library to manage command line inputs (CLI) that builds upon tapestry-ioc, the inversion of control framework underlying the Tapestry5 Web framework.
+Tapestry5-cli is a library for managing command line inputs (CLI) that builds upon [tapestry-ioc](http://tapestry.apache.org/ioc.html), the inversion of control framework underlying the [Tapestry5 Web framework](http://tapestry.apache.org/).
 
-The goal of the tapestry5-cli library is to implement a service to parse the command line, validate the options and inputs provided by the user, and provide the resulting values to tapestry5 enabled applications.
+The goal of the tapestry5-cli library is to implement a service to parse the command line, validate the options and inputs provided by the user, and provide the resulting values to Tapestry5 enabled applications.
 
 Tapestry5-cli targets mainly Non-Web applications; nevertheless, it can be used also in 'standard' Tapestry5 Web applications.
 
-This README file describes the high level view and the main functionalities provided by the framework. The docs folder contains additional documentations.
+This README file describes the high level view and the main functionalities provided by tapestry5-cli.
+The docs folder contains additional documentations.
 
 # How does it work?
 
@@ -15,35 +16,36 @@ Tapestry5-cli provides a service, called `CLIParser`, that offers the following 
 ```java
 public void parse(String[] args) throws ParseException, ValidationException;
 ```
-The parser receives the `String[] args`, which is the command line input of the program, and process the inputs with the following logic:
-1. Parse the input according to the specifications contributed by the user. 
-2. Validate the value(s) of single options and inputs. 
-3. Validate the combinations of values from multiple options and inputs at once.
+The parser receives the `String[] args`, which is the command line input of the program, and processes it according to the following logic:  
+1. Parse the input according to the specifications contributed by the user.  
+2. Validate the value(s) of single options and inputs.  
+3. Validate the combinations of values from multiple options and inputs at once.  
 
 If the entire process works fine the values of the options and the inputs can be accessed through a service called `CLIOptionSource`, or they can be injected in the code via the following annotations: `@CLIOption` and `@CLIInput`.
-The mechanism provided in this way resembles closely the one provided by the tapestry-ioc libraries under the name of `SymbolSource`.
+The mechanism provided in this way resembles closely the `SymbolSource`.
 
-If the parsing fails, a `ParsingException` is raised, while if the validation fails a `ValidationException` is raised; in both cases, the console will print out the help message and a message to explain the user why the exception was raised.
+If the parsing fails, a `ParsingException` is raised, while if the validation fails a `ValidationException` is raised; in both cases, the console will print out an help message and a message that explains to the user why the exception was raised.
 
-# Contributions
+# Main Configurations
 
-Users can configure the library in different places by exploiting the facilities provided by the tapestry-ioc framework or by the other frameworks employed in the library.
+Users can configure the library in different by exploiting the facilities provided by tapestry-ioc and the other frameworks used by tapestry5-cli.
 
 ## Specify the Main Command
+
 At the moment, the main command symbol (`CLISymbolConstants.COMMAND_NAME`) is the only mandatory configuration that must be provided.
-This symbol specifies the name of your application/command and it is used to diplay the help message and can be contributed as any other tapestry symbols.
-For example, inside the application defaults:  
+This symbol specifies the name of your application/command, is used to display the help message, and must be contributed as any other tapestry symbols.
+For example, it can be specified inside any application module as an `ApplicationDefaults` entry:  
 ```java
 public void contributeApplicationDefaults(MappedConfiguration<String, String> configuration) {
 		configuration.add(CLISymbolConstants.COMMAND_NAME, "test");
 }
 ```
 
-*Note*: this feature may be removed in the future releases of the library.
-
 ## Specify the Options
-Options are defined by contributing `Option` instances to the `CLIParser` service, as shown in the following.
-Each contribution must specify the short notation for the option (for example, `-h`), its long notation (e.g., `--help`), the number of inputs required (0 or more), if the option is mandatory, and a brief description of the option.
+Options are used to organize the inputs provided on the command line.
+They are identified by a letter, i.e., their short name, and a human-friendly long notation.  
+
+In tapestry5-cli, options are defined by contributing instances of the `CLIOption` class to the `CLIParser` service, as shown below.
 
 ```java
 public void contributeCLIParser(Configuration<Option> contributions) {
@@ -54,15 +56,18 @@ public void contributeCLIParser(Configuration<Option> contributions) {
 	contributions.add(new Option("g", "the-gamma", 2, false, "Gamma requires 2 inputs but it is not a mandatory option"));
 }
 ```
+Each contribution must specify the short notation for the option (e.g., `h`), the long notation (e.g., `help`), the number of inputs to provide (0, 1, or more), if the option is mandatory/required, and a brief description of the option that will used inside the automatically generated help/usage message.
 
-As the configurations might be distributed across several modules and contributions, the library checks for duplicate or conflicting definitions.
-Conflicting definitions are identified by the same short notation but different long notation, or viceversa; conflicting definitions are also identified when the notations match but the expected number of parameters differs.
-Definitions that have different descriptions, or different *required* attributed are merge according to the following rule: Descriptions are appended one after the other, while stronger requirements are maintained. In other words, if two options with same notations and expected parameter have different required attribute, the library force the strictes one, i.e., required.
+As the configurations can be distributed across modules, users might end up (re-)defining options. During the instantiation of `CLIParser`, the library checks for duplicate or conflicting definitions:
+Conflicting definitions are identified by the same short notation but different long notation, or *vice-versa*;
+conflicting definitions are also identified when their notations match but the expected number of parameters differs.
+Instead, definitions that provide different descriptions, or different *required* attributed are merged according to the following rule: Descriptions are appended one after the other, while stronger requirements are maintained. In other words, if two options with same notations but different *required* parameter are contributed, the library will merge them into a new options with strictest *required* attribute, i.e., `required=true`.
 
-*Note*: this rules are encoded and cannot be configured. They might possibly change in future releases.
+*Note*: this rules are hard-coded, therefore cannot be configured by the user.
 
 ## Specify the Application Configuration Objects
-To validate the values of options the tapestry5-cli resort to another project, called tapestry-beanvalidator[1][2], that brings the power of JSR303 bean-validation into Tapestry's world.
+
+To validate the values of options the tapestry5-cli resort to another project, called tapestry-beanvalidator[[1],[2]], that brings the power of JSR303 bean-validation into Tapestry's world.
 JSR303 requires that fields/methods of classes are annotated with specific annotations to specify how to validate them;
 furthermore, the libraries that provide the implementation of the JSR 303 standard (e.g., hibernate-validator[4]) may offer additional annotations, therefore validators, to be used.
 
