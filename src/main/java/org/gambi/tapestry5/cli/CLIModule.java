@@ -10,14 +10,13 @@ import org.apache.tapestry5.ioc.ObjectProvider;
 import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
 import org.apache.tapestry5.ioc.annotations.Contribute;
+import org.apache.tapestry5.ioc.annotations.InjectService;
 import org.apache.tapestry5.ioc.annotations.SubModule;
 import org.apache.tapestry5.ioc.annotations.Symbol;
 import org.apache.tapestry5.ioc.services.Builtin;
 import org.apache.tapestry5.ioc.services.MasterObjectProvider;
 import org.apache.tapestry5.ioc.services.PipelineBuilder;
 import org.gambi.tapestry5.cli.data.CLIOption;
-import org.gambi.tapestry5.cli.internal.services.CLIOptionObjectProvider;
-import org.gambi.tapestry5.cli.internal.services.CLIInputObjectProvider;
 import org.gambi.tapestry5.cli.modules.AdditionalCoercions;
 import org.gambi.tapestry5.cli.services.CLIOptionProvider;
 import org.gambi.tapestry5.cli.services.CLIOptionSource;
@@ -28,8 +27,12 @@ import org.gambi.tapestry5.cli.services.impl.CLIOptionSourceImpl;
 import org.gambi.tapestry5.cli.services.impl.CLIParserImpl;
 import org.gambi.tapestry5.cli.services.impl.CLIValidatorFilterImpl;
 import org.gambi.tapestry5.cli.services.impl.DefaullCLIValidatorFilter;
-import org.gambi.tapestry5.cli.services.internals.ApplicationConfigurationSource;
-import org.gambi.tapestry5.cli.services.internals.impl.ApplicationConfigurationSourceImpl;
+import org.gambi.tapestry5.cli.services.internal.ApplicationConfigurationSource;
+import org.gambi.tapestry5.cli.services.internal.BridgeCLIOptionProvider;
+import org.gambi.tapestry5.cli.services.internal.CLIInputObjectProvider;
+import org.gambi.tapestry5.cli.services.internal.CLIOptionObjectProvider;
+import org.gambi.tapestry5.cli.services.internal.impl.ApplicationConfigurationSourceImpl;
+import org.gambi.tapestry5.cli.services.internal.impl.BridgeCLIOptionProviderImpl;
 import org.gambi.tapestry5.cli.utils.CLISymbolConstants;
 import org.slf4j.Logger;
 
@@ -208,9 +211,13 @@ public class CLIModule {
 	 */
 	@Contribute(CLIOptionSource.class)
 	public static void setupCLIOptionProviders(
+			@InjectService("BridgeCLIOptionProvider") CLIOptionProvider bridgeCLIOptionProvider,
+			OrderedConfiguration<CLIOptionProvider> providers) {
+		providers.add("Bridge", bridgeCLIOptionProvider, "");
+	}
 
-	OrderedConfiguration<CLIOptionProvider> providers) {
-
+	public BridgeCLIOptionProvider build() {
+		return new BridgeCLIOptionProviderImpl();
 	}
 
 }

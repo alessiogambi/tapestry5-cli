@@ -25,7 +25,7 @@ import org.gambi.tapestry5.cli.data.ApplicationConfiguration;
 import org.gambi.tapestry5.cli.data.CLIOption;
 import org.gambi.tapestry5.cli.services.CLIParser;
 import org.gambi.tapestry5.cli.services.CLIValidator;
-import org.gambi.tapestry5.cli.services.internals.ApplicationConfigurationSource;
+import org.gambi.tapestry5.cli.services.internal.ApplicationConfigurationSource;
 import org.gambi.tapestry5.cli.utils.CLIDefaultOptions;
 import org.slf4j.Logger;
 

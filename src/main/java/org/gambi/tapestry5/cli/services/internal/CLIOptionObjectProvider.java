@@ -1,4 +1,4 @@
-package org.gambi.tapestry5.cli.internal.services;
+package org.gambi.tapestry5.cli.services.internal;
 
 import org.apache.tapestry5.ioc.AnnotationProvider;
 import org.apache.tapestry5.ioc.ObjectLocator;

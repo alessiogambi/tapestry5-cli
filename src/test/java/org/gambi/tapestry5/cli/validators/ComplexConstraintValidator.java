@@ -5,7 +5,7 @@ import javax.validation.ConstraintValidatorContext;
 
 import org.gambi.tapestry5.cli.annotations.ComplexValidationConstraint;
 import org.gambi.tapestry5.cli.data.NestedBean;
-import org.gambi.tapestry5.cli.services.internals.ApplicationConfigurationSource;
+import org.gambi.tapestry5.cli.services.internal.ApplicationConfigurationSource;
 
 /**
  * This class is an example of implementation of a complex constraint specified

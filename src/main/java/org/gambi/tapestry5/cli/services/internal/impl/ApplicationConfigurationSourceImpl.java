@@ -1,4 +1,4 @@
-package org.gambi.tapestry5.cli.services.internals.impl;
+package org.gambi.tapestry5.cli.services.internal.impl;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
@@ -16,7 +16,7 @@ import org.apache.tapestry5.ValidationException;
 import org.apache.tapestry5.ioc.services.TypeCoercer;
 import org.apache.tapestry5.ioc.util.UnknownValueException;
 import org.gambi.tapestry5.cli.data.ApplicationConfiguration;
-import org.gambi.tapestry5.cli.services.internals.ApplicationConfigurationSource;
+import org.gambi.tapestry5.cli.services.internal.ApplicationConfigurationSource;
 import org.slf4j.Logger;
 
 public class ApplicationConfigurationSourceImpl implements

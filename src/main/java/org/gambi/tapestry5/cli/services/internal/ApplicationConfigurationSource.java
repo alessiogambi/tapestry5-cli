@@ -1,4 +1,4 @@
-package org.gambi.tapestry5.cli.services.internals;
+package org.gambi.tapestry5.cli.services.internal;
 
 import org.apache.commons.cli.CommandLine;
 import org.gambi.tapestry5.cli.data.ApplicationConfiguration;
