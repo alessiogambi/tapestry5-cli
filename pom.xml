@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.gambi</groupId>
 	<artifactId>tapestry5-cli</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1-SNAPSHOT</version>
 
 	<contributors>
 		<contributor>
@@ -61,6 +61,8 @@
 		</dependency>
 
 		<!-- Input Validation -->
+        <!-- The code available in the git project is working fine, however the published maven dep is broken.
+        This requires the infosys repo -->
 		<dependency>
 			<groupId>org.apache.tapestry</groupId>
 			<artifactId>tapestry-simple-beanvalidator</artifactId>
@@ -70,6 +72,7 @@
 	</dependencies>
 
 	<build>
+        <!-- For easy distribution management -->
 		<extensions>
 			<extension>
 				<groupId>org.apache.maven.wagon</groupId>
@@ -94,7 +97,7 @@
 				<configuration>
 					<archive>
 						<manifestEntries>
-							<Tapestry-Module-Classes>org.gambi.tapestry5.modules.cli.CLIModule</Tapestry-Module-Classes>
+							<Tapestry-Module-Classes>org.gambi.tapestry5.cli.CLIModule</Tapestry-Module-Classes>
 						</manifestEntries>
 					</archive>
 				</configuration>
