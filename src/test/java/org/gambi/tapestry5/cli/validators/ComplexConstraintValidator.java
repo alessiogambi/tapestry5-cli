@@ -1,7 +1,5 @@
 package org.gambi.tapestry5.cli.validators;
 
-import java.util.Arrays;
-
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 

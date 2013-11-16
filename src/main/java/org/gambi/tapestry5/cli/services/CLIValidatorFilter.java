@@ -5,6 +5,6 @@ import java.util.Map;
 
 public interface CLIValidatorFilter {
 
-	public void validate(Map<String, String> inputs, List<String> accumulator,
-			CLIValidator delegate);
+	public void validate(Map<String, String> options, List<String> inputs,
+			List<String> accumulator, CLIValidator delegate);
 }

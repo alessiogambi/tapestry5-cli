@@ -1,5 +1,7 @@
 package org.gambi.tapestry5.cli.data;
 
+import java.util.Arrays;
+
 import org.apache.commons.cli.OptionBuilder;
 
 /**
@@ -12,11 +14,16 @@ import org.apache.commons.cli.OptionBuilder;
  */
 public class CLIOption {
 
+	// TODO Remove the get/set values keep only defaults.
 	private String shortOpt;
 	private String longOpt;
 	private int nArgs;
 	boolean required;
 	private String description;
+
+	private String[] defaultValues;
+	// Not really sure about this
+	private String[] values;
 
 	public CLIOption(String shortOpt, String longOpt, int nArgs,
 			boolean required, String description) {
@@ -33,7 +40,8 @@ public class CLIOption {
 	public String toString() {
 		return OptionBuilder.withLongOpt(longOpt).hasArgs(nArgs)
 				.isRequired(required).withDescription(description)
-				.create(shortOpt).toString();
+				.create(shortOpt).toString()
+				+ " with default(s) " + Arrays.toString(defaultValues);
 	}
 
 	public String getShortOpt() {
@@ -64,7 +72,19 @@ public class CLIOption {
 				&& this.longOpt.equals(anotherOption.longOpt)
 				&& this.nArgs != anotherOption.nArgs) {
 			return true;
-		} else {
+		} else if (this.getDefaultValue() != null
+				&& anotherOption.getDefaultValue() != null
+				&& !this.getDefaultValue().equals(
+						anotherOption.getDefaultValue())) {
+			return true;
+		} else if (this.getDefaultValues() != null
+				&& anotherOption.getDefaultValues() != null
+				&& !Arrays.equals(this.getDefaultValues(),
+						anotherOption.getDefaultValues())) {
+			return true;
+		}
+
+		else {
 			return false;
 		}
 	}
@@ -79,9 +99,13 @@ public class CLIOption {
 	 * have different required attribute, the library forces the strictest one,
 	 * i.e., required.
 	 * 
+	 * Different Default values create a conflict unless one is null; in that
+	 * case, the non-null value wins
+	 * 
 	 * @param anotherOption
 	 */
 	public void merge(CLIOption anotherOption) {
+
 		if (anotherOption == null) {
 			return;
 		} else if (this.conflicts(anotherOption)) {
@@ -92,6 +116,19 @@ public class CLIOption {
 					anotherOption.description);
 			// Pick the strongest requires
 			this.required = (this.required || anotherOption.required);
+			// Pick the not null default value(s)
+			String defaultValue = (this.getDefaultValue() != null) ? this
+					.getDefaultValue() : anotherOption.getDefaultValue();
+			if (defaultValue != null) {
+				this.setDefaultValue(defaultValue);
+			} else {
+				String[] defaultValues = (this.getDefaultValues() != null) ? this
+						.getDefaultValues() : anotherOption.getDefaultValues();
+				if (defaultValues != null) {
+					this.setDefaultValues(defaultValues);
+				}
+
+			}
 		}
 	}
 
@@ -175,4 +212,47 @@ public class CLIOption {
 		this.description = description;
 	}
 
+	public void setDefaultValue(String defaultValue) {
+		this.defaultValues = new String[] { defaultValue };
+	}
+
+	public String getDefaultValue() {
+		if (defaultValues == null) {
+			return null;
+		} else if (defaultValues.length > 0) {
+			return defaultValues[0];
+		} else {
+			return null;
+		}
+	}
+
+	public void setDefaultValues(String[] defaultValues) {
+		this.defaultValues = defaultValues;
+	}
+
+	public String[] getDefaultValues() {
+		return defaultValues;
+	}
+
+	public void setValue(String value) {
+		this.values = new String[] { value };
+	}
+
+	public String getValue() {
+		if (values == null) {
+			return null;
+		} else if (values.length > 0) {
+			return values[0];
+		} else {
+			return null;
+		}
+	}
+
+	public void setValues(String[] values) {
+		this.values = values;
+	}
+
+	public String[] getValues() {
+		return values;
+	}
 }

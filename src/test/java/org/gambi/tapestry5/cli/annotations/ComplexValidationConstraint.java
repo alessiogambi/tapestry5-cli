@@ -15,7 +15,7 @@ import org.gambi.tapestry5.cli.validators.ComplexConstraintValidator;
 @Constraint(validatedBy = ComplexConstraintValidator.class)
 public @interface ComplexValidationConstraint {
 
-	public abstract String message() default "{org.gambi.tapestry5.cli.validators.ComplexValidationConstraint.message}";
+	public abstract String message() default "The Complex Constraint was not valid";
 
 	public abstract Class<?>[] groups() default {};
 

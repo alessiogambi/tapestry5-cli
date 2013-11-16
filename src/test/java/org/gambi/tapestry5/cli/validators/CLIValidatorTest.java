@@ -14,7 +14,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ComplexConstraintValidatorTest {
+public class CLIValidatorTest {
 	private Registry registry;
 	private RegistryBuilder builder;
 
@@ -42,6 +42,33 @@ public class ComplexConstraintValidatorTest {
 	}
 
 	@Test
+	public void containsTest() {
+		ArrayList<CLIOption> options = new ArrayList<CLIOption>();
+
+		CLIOption o1 = new CLIOption("1", "bb", 0, true, "description");
+		CLIOption o2 = new CLIOption("3", "dasdsabb", 0, true, "description");
+		CLIOption o3 = new CLIOption("1", "bb", 0, true, "bibi description");
+
+		System.out
+				.println("ComplexConstraintValidatorTest.containsTest() o1 == o3 "
+						+ o1.equals(o3));
+
+		System.out
+				.println("ComplexConstraintValidatorTest.containsTest() o3 == o1 "
+						+ o3.equals(o1));
+
+		options.add(o1);
+		options.add(o2);
+
+		System.out
+				.println("ComplexConstraintValidatorTest.containsTest() Contains o1: "
+						+ options.contains(o1));
+		System.out
+				.println("ComplexConstraintValidatorTest.containsTest() Contains o3: "
+						+ options.contains(o3));
+	}
+
+	@Test
 	public void okOptions() {
 		CLIParser parser = registry.getService(CLIParser.class);
 		String[] args = new String[] { "-a", "100", "-d", "10", "--beta",
@@ -61,8 +88,8 @@ public class ComplexConstraintValidatorTest {
 		CLIParser parser = registry.getService(CLIParser.class);
 		String[] args = new String[] { "-a", "100", "--beta", "cicc", "-g",
 				"gamma", "--epsilon", "12", "-d", "15", "first-arg", "-v",
-				"a-very-longhish-parameters-that-is-not goood", "short",
-				"blabl4", "second-args", "whaterver" };
+				"a-very-longhish-parameters-that-is-not goood", "short", "blabl4", "second-args",
+				"whaterver" };
 		try {
 			parser.parse(args);
 		} catch (Exception e) {

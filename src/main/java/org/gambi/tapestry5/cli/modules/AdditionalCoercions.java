@@ -47,8 +47,8 @@ public class AdditionalCoercions {
 		Coercion<String, String[]> stringToStringArray = new Coercion<String, String[]>() {
 
 			public String[] coerce(String arg0) {
-				System.out.println("\n\n Coercing string: " + arg0
-						+ " to String[]");
+				// System.out.println("\n\n Coercing string: " + arg0
+				// + " to String[]");
 
 				String _stringarray = arg0;
 				_stringarray = _stringarray.trim();
@@ -79,8 +79,8 @@ public class AdditionalCoercions {
 		Coercion<char[], String> charsToString = new Coercion<char[], String>() {
 
 			public String coerce(char[] arg0) {
-				System.out.println("\n\n Coercing char[]: "
-						+ Arrays.toString(arg0) + " to String");
+				// System.out.println("\n\n Coercing char[]: "
+				// + Arrays.toString(arg0) + " to String");
 
 				StringBuffer result = new StringBuffer();
 
@@ -97,8 +97,8 @@ public class AdditionalCoercions {
 		Coercion<char[][], String[]> charMatrixToStringArray = new Coercion<char[][], String[]>() {
 
 			public String[] coerce(char[][] arg0) {
-				System.out.println("\n\n Coercing char[][]: " + arg0
-						+ " to String[]");
+				// System.out.println("\n\n Coercing char[][]: " + arg0
+//						+ " to String[]");
 
 				String[] result = new String[arg0.length];
 

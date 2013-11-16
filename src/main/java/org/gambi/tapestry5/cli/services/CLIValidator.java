@@ -11,6 +11,6 @@ import java.util.Map;
  */
 public interface CLIValidator {
 
-	public void validate(final Map<String, String> inputs,
-			List<String> accumulator);
+	public void validate(final Map<String, String> options,
+			final List<String> inputs, List<String> accumulator);
 }

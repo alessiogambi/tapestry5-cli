@@ -7,10 +7,19 @@ import java.util.Map;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.ioc.services.TypeCoercer;
 import org.gambi.tapestry5.cli.services.CLIValidator;
-import org.gambi.tapestry5.cli.services.CLIValidatorFilter;
 import org.slf4j.Logger;
 
-public class SumValidator implements CLIValidatorFilter {
+/**
+ * Sample validator to check if the sum of the first two inputs (not options !)
+ * is greater than 100.
+ * 
+ * Being a CLIValidator, this service is invoked as the last step before ending
+ * the parsing.
+ * 
+ * @author alessiogambi
+ * 
+ */
+public class SumValidator implements CLIValidator {
 
 	@Inject
 	private Logger logger;
@@ -18,33 +27,26 @@ public class SumValidator implements CLIValidatorFilter {
 	@Inject
 	private TypeCoercer typeCoercer;
 
-	public List<String> validate(final Map<String, String> inputs) {
+	public void validate(Map<String, String> options, List<String> inputs,
+			List<String> accumulator) {
 
 		List<String> failedValidation = new ArrayList<String>();
 		try {
-			// NOTE WE NEED SOME REAL WAY TO STORE AND RETRIEVE SYMBOLS THAT
-			// MATCH CLI OBJECTS !
-			Integer a = typeCoercer.coerce(inputs.get("args:input[0]"),
-					Integer.class);
-			Integer b = typeCoercer.coerce(inputs.get("args:input[1]"),
-					Integer.class);
+			Integer a = typeCoercer.coerce(inputs.get(0), Integer.class);
+			Integer b = typeCoercer.coerce(inputs.get(1), Integer.class);
 
 			if (a + b > 100) {
-				failedValidation.add("SumValidation Failed ! a+b > 10 ");
+				failedValidation.add("SumValidation Failed ! a+b > 100");
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.warn("Error during validation ", e);
 			failedValidation.add("SumValidation Failed!");
 		}
-		return failedValidation;
+
+		if (failedValidation.size() > 0) {
+			logger.debug("Validation Failed: " + failedValidation);
+		}
+		accumulator.addAll(failedValidation);
 	}
 
-	public void validate(Map<String, String> inputs, List<String> accumulator,
-			CLIValidator delegate) {
-
-		// This will accumulate stuff from previous filters
-		delegate.validate(inputs, accumulator);
-
-		accumulator.addAll(validate(inputs));
-	}
 }

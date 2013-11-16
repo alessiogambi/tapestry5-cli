@@ -1,17 +1,26 @@
 package org.gambi.tapestry5.cli;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import javax.validation.Validator;
 
 import org.apache.tapestry5.ioc.ServiceBinder;
 import org.apache.tapestry5.ioc.annotations.SubModule;
+import org.apache.tapestry5.ioc.annotations.Symbol;
+import org.apache.tapestry5.ioc.services.PipelineBuilder;
 import org.gambi.tapestry5.cli.data.CLIOption;
 import org.gambi.tapestry5.cli.modules.AdditionalCoercions;
 import org.gambi.tapestry5.cli.services.CLIParser;
+import org.gambi.tapestry5.cli.services.CLIValidator;
+import org.gambi.tapestry5.cli.services.CLIValidatorFilter;
 import org.gambi.tapestry5.cli.services.impl.CLIParserImpl;
+import org.gambi.tapestry5.cli.services.impl.CLIValidatorFilterImpl;
+import org.gambi.tapestry5.cli.services.impl.DefaullCLIValidatorFilter;
 import org.gambi.tapestry5.cli.services.internals.ApplicationConfigurationSource;
 import org.gambi.tapestry5.cli.services.internals.impl.ApplicationConfigurationSourceImpl;
+import org.gambi.tapestry5.cli.utils.CLISymbolConstants;
 import org.slf4j.Logger;
 
 /*
@@ -80,6 +89,10 @@ public class CLIModule {
 	 */
 	Logger logger,
 	/**
+	 * @category Symbol UserContributions
+	 */
+	@Symbol(CLISymbolConstants.COMMAND_NAME) String commandName,
+	/**
 	 * @category Service CLIModule
 	 */
 	ApplicationConfigurationSource applicationConfigurationSource,
@@ -88,11 +101,55 @@ public class CLIModule {
 	 */
 	Validator validator,
 	/**
+	 * @category Service CLIValidator
+	 */
+	CLIValidator cliValidator,
+	/**
 	 * @category UserContributions
 	 */
 	Collection<CLIOption> options) {
 
 		return new CLIParserImpl(logger, applicationConfigurationSource,
-				validator, options);
+				validator, cliValidator, commandName, options);
+	}
+
+	/**
+	 * Build the second validation layer as a sequence of CLIValidators
+	 * 
+	 * 
+	 * @param commands
+	 * @param chainBuilder
+	 * @return
+	 * 
+	 * @category Build CLIValidator
+	 */
+	public static CLIValidator build(
+	/**
+	 * @category Resource
+	 */
+	Logger logger,
+	/**
+	 * @category Service TapestryIOCModule
+	 */
+	PipelineBuilder pipe,
+	/**
+	 * @category UserContributions
+	 */
+	List<CLIValidator> contributions) {
+
+		/*
+		 * This is a trick to force a specific sequence of filters: we use the
+		 * contributions to define an standard class that acts as the filter
+		 */
+		List<CLIValidatorFilter> filters = new ArrayList<CLIValidatorFilter>();
+		for (CLIValidator cliValidator : contributions) {
+			filters.add(new CLIValidatorFilterImpl(logger, cliValidator));
+		}
+
+		// Define the terminator filter
+		filters.add(new DefaullCLIValidatorFilter());
+
+		return pipe.build(logger, CLIValidator.class, CLIValidatorFilter.class,
+				filters);
 	}
 }
