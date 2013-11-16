@@ -25,7 +25,8 @@ import org.gambi.tapestry5.cli.data.ApplicationConfiguration;
 import org.gambi.tapestry5.cli.data.CLIOption;
 import org.gambi.tapestry5.cli.services.CLIParser;
 import org.gambi.tapestry5.cli.services.CLIValidator;
-import org.gambi.tapestry5.cli.services.internals.ApplicationConfigurationSource;
+import org.gambi.tapestry5.cli.services.internal.ApplicationConfigurationSource;
+import org.gambi.tapestry5.cli.services.internal.BridgeCLIOptionProvider;
 import org.gambi.tapestry5.cli.utils.CLIDefaultOptions;
 import org.slf4j.Logger;
 
@@ -35,6 +36,8 @@ public class CLIParserImpl implements CLIParser {
 	private ApplicationConfigurationSource applicationConfigurationSource;
 	private Validator validator;
 	private CLIValidator cliValidator;
+
+	private BridgeCLIOptionProvider bridgeCLIOptionProvider;
 
 	// User Contributions. This is also used to store the parsed inputs if any
 	private Collection<CLIOption> cliOptions;
@@ -51,6 +54,7 @@ public class CLIParserImpl implements CLIParser {
 	public CLIParserImpl(Logger logger,
 			ApplicationConfigurationSource applicationBeanSource,
 			Validator validator, CLIValidator cliValidator, String commandName,
+			BridgeCLIOptionProvider bridgeCLIOptionProvider,
 			Collection<CLIOption> _options) {
 
 		this.logger = logger;
@@ -60,10 +64,12 @@ public class CLIParserImpl implements CLIParser {
 
 		this.commandName = commandName;
 
+		this.bridgeCLIOptionProvider = bridgeCLIOptionProvider;
+
 		this.formatter = new HelpFormatter();
 		this.pw = new PrintWriter(System.out);
 		this.parser = new BasicParser();
-		
+
 		validateAndMerge(_options);
 	}
 
@@ -196,16 +202,18 @@ public class CLIParserImpl implements CLIParser {
 			logger.debug("Prepare CLIInput");
 			List<String> inputs = prepareCLIInputs();
 			logger.debug("\t" + inputs);
+
 			logger.debug("Prepare CLIOptions");
-			Map<String, String> options = prepareCLIOptions();
+			Map<CLIOption, String> options = prepareCLIOptions();
 			logger.debug("\t" + options);
 
 			logger.debug("CLI Validation");
 			validate(options, inputs);
 
-			// Here we need to connect to CLIOptionSource via the options/inputs
-			// variables:
-			// runtimeSymbolProvider.addSymbols(theSymbols);
+			// Setup the CLIOptionSource
+			bridgeCLIOptionProvider.add(options);
+			bridgeCLIOptionProvider.add(inputs);
+
 		} catch (Exception e) {
 			printAndReThrow(e);
 		}
@@ -229,7 +237,6 @@ public class CLIParserImpl implements CLIParser {
 		logger.debug("Parsing " + Arrays.toString(args));
 		// Parse the input line
 		parsedOptions = parser.parse(options, args);
-		// Gives value to each property of the application bean object
 
 		for (CLIOption cliOption : cliOptions) {
 			logger.debug("Processing " + cliOption.toString());
@@ -237,7 +244,7 @@ public class CLIParserImpl implements CLIParser {
 			Option theOption = findOptionByName(cliOption.getShortOpt());
 			if (theOption != null) {
 				if (!theOption.hasArg()) {
-					// FLAG
+					// FLAG: this may override the previous value
 					cliOption.setValue("true");
 				} else {
 					if (!theOption.hasArgs()) {
@@ -251,9 +258,26 @@ public class CLIParserImpl implements CLIParser {
 
 				logger.debug("Done Option" + cliOption.toString());
 			} else {
-				logger.debug(String.format("CLIOption %s is not set",
+				// Set default values if any
+				logger.debug(String.format(
+						"CLIOption %s is not set. Force default values if any",
 						cliOption.toString()));
+				if (cliOption.getnArgs() == 0) {
+					// FLAG Options have default value to false. They become
+					// true ONLY if they were specified on the command line
+					logger.debug("CLIParserImpl.parse(): Default setting "
+							+ cliOption.getLongOpt() + " == false ");
+					cliOption.setDefaultValue("false");
+					cliOption.setValue("false");
+				} else {
+					if (cliOption.getnArgs() == 1) {
+						cliOption.setValue(cliOption.getDefaultValue());
+					} else if (cliOption.getnArgs() > 1) {
+						cliOption.setValues(cliOption.getDefaultValues());
+					}
+				}
 			}
+
 		}
 
 		return applicationConfigurationSource.get(parsedOptions);
@@ -309,7 +333,7 @@ public class CLIParserImpl implements CLIParser {
 		}
 	}
 
-	private void validate(Map<String, String> options, List<String> inputs)
+	private void validate(Map<CLIOption, String> options, List<String> inputs)
 			throws ValidationException {
 		boolean isValid = true;
 		StringBuffer errorBuffer = new StringBuffer();
@@ -369,65 +393,16 @@ public class CLIParserImpl implements CLIParser {
 	 * 
 	 * @return
 	 */
-	private Map<String, String> prepareCLIOptions() {
-		Map<String, String> result = new HashMap<String, String>();
+	private Map<CLIOption, String> prepareCLIOptions() {
+		Map<CLIOption, String> result = new HashMap<CLIOption, String>();
 
 		try {
-			// Boolean options must be processed in a different way:
-			// We need to explicitly set the value of boolean properties, but
-			// false properties are simply not present on the CLI.
-			// so we default their value to false, and if they are actually
-			// present, their value will be tranformed later to true.
-
-			/*
-			 * Set any default value to the option. TODO Note we need to check
-			 * default vs required definitions !! It is not clear why one should
-			 * have a default value for an optional configuration that is
-			 * required ...
-			 */
 			for (CLIOption cliOption : cliOptions) {
-
-				if (cliOption.getnArgs() == 0) {
-					// FLAG Options have default value to false. They become
-					// true ONLY if they were specified on the command line
-					logger.debug("CLIParserImpl.parse(): Default setting "
-							+ cliOption.getLongOpt() + " == FALSE ");
-					result.put(cliOption.getLongOpt(), "false");
-				} else if (cliOption.getnArgs() == 1) {
-					if (cliOption.getDefaultValue() != null) {
-						logger.debug("CLIParserImpl.parse(): Default setting "
-								+ cliOption.getLongOpt() + " == "
-								+ cliOption.getDefaultValue());
-						result.put(cliOption.getLongOpt(),
-								cliOption.getDefaultValue());
-					}
-				} else {
-					if (cliOption.getDefaultValues() != null) {
-						logger.debug("CLIParserImpl.parse(): Default setting "
-								+ cliOption.getLongOpt() + " == "
-								+ Arrays.toString(cliOption.getDefaultValues()));
-						result.put(cliOption.getLongOpt(),
-								Arrays.toString(cliOption.getDefaultValues()));
-					}
-				}
-			}
-
-			// Override and set the value only for the parsedOptions, that is,
-			// the options actually passed as input
-			for (CLIOption cliOption : cliOptions) {
-				if (cliOption.getnArgs() == 0) {
-					result.put(cliOption.getLongOpt(), "true");
-				} else {
-					// Options with 1 or more arguments. Note "null" values are
-					// invalid !
-					if (cliOption.getnArgs() == 1
-							&& cliOption.getValue() != null) {
-						result.put(cliOption.getLongOpt(), cliOption.getValue());
-					} else if (cliOption.getnArgs() > 1
-							&& cliOption.getValues() != null) {
-						result.put(cliOption.getLongOpt(),
-								Arrays.toString(cliOption.getValues()));
-					}
+				if (cliOption.getValue() != null) {
+					result.put(cliOption, cliOption.getValue());
+				} else if (cliOption.getValues() != null) {
+					result.put(cliOption,
+							Arrays.toString(cliOption.getValues()));
 				}
 			}
 
