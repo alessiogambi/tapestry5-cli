@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.ioc.services.TypeCoercer;
+import org.gambi.tapestry5.cli.data.CLIOption;
 import org.gambi.tapestry5.cli.services.CLIValidator;
 import org.slf4j.Logger;
 
@@ -27,7 +28,7 @@ public class SumValidator implements CLIValidator {
 	@Inject
 	private TypeCoercer typeCoercer;
 
-	public void validate(Map<String, String> options, List<String> inputs,
+	public void validate(Map<CLIOption, String> options, List<String> inputs,
 			List<String> accumulator) {
 
 		List<String> failedValidation = new ArrayList<String>();

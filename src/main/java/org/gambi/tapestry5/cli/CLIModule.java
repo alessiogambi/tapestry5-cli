@@ -126,12 +126,17 @@ public class CLIModule {
 	 */
 	CLIValidator cliValidator,
 	/**
+	 * @category Service BridgeCLIOptionProvider
+	 */
+	BridgeCLIOptionProvider bridgeCLIOptionProvider,
+	/**
 	 * @category UserContributions
 	 */
 	Collection<CLIOption> options) {
 
 		return new CLIParserImpl(logger, applicationConfigurationSource,
-				validator, cliValidator, commandName, options);
+				validator, cliValidator, commandName, bridgeCLIOptionProvider,
+				options);
 	}
 
 	/**

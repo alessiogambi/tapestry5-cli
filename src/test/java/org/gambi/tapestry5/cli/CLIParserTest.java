@@ -10,6 +10,7 @@ import org.apache.tapestry5.ioc.Registry;
 import org.apache.tapestry5.ioc.RegistryBuilder;
 import org.apache.tapestry5.ioc.services.SymbolSource;
 import org.gambi.tapestry5.cli.modules.ComplexConstraintModule;
+import org.gambi.tapestry5.cli.services.CLIOptionSource;
 import org.gambi.tapestry5.cli.services.CLIParser;
 import org.junit.After;
 import org.junit.Assert;
@@ -75,9 +76,6 @@ public class CLIParserTest {
 			Assert.fail("Parsing failed ");
 			return;
 		}
-
-		SymbolSource symbolSource = registry.getService(SymbolSource.class);
-		Assert.assertEquals("10", symbolSource.valueForSymbol("args:alfa"));
 	}
 
 	@Test
@@ -108,8 +106,51 @@ public class CLIParserTest {
 			Assert.fail("Exception " + e.getMessage());
 		}
 
-		SymbolSource symbolSource = registry.getService(SymbolSource.class);
-		Assert.assertEquals("false", symbolSource.valueForSymbol("args:tommy"));
+		CLIOptionSource cliOptionSource = registry
+				.getService(CLIOptionSource.class);
+		Assert.assertEquals("false", cliOptionSource.valueForOption("t"));
+		Assert.assertEquals("false", cliOptionSource.valueForOption("tommy"));
+
+	}
+
+	@Test
+	public void flagTrue() throws MalformedURLException {
+		CLIParser parser = registry.getService(CLIParser.class);
+		String[] args = new String[] { "-t", "false", "-a", "100", "--beta",
+				"7xxs", "-g", "gamma", "--epsilon", "12", "-d", "15",
+				"first-arg", "-u", "http://www.google.com", "-su",
+				"http://www.bing.com", "-o", "123", "--jonny", "second-args",
+				"whaterver" };
+		try {
+			parser.parse(args);
+		} catch (Exception e) {
+			Assert.fail("Exception " + e.getMessage());
+		}
+
+		CLIOptionSource cliOptionSource = registry
+				.getService(CLIOptionSource.class);
+		Assert.assertEquals("true", cliOptionSource.valueForOption("j"));
+		Assert.assertEquals("true", cliOptionSource.valueForOption("jonny"));
+
+	}
+
+	@Test
+	public void flagFalse() throws MalformedURLException {
+		CLIParser parser = registry.getService(CLIParser.class);
+		String[] args = new String[] { "-t", "false", "-a", "100", "--beta",
+				"7xxs", "-g", "gamma", "--epsilon", "12", "-d", "15",
+				"first-arg", "-u", "http://www.google.com", "-su",
+				"http://www.bing.com", "-o", "123", "second-args", "whaterver" };
+		try {
+			parser.parse(args);
+		} catch (Exception e) {
+			Assert.fail("Exception " + e.getMessage());
+		}
+
+		CLIOptionSource cliOptionSource = registry
+				.getService(CLIOptionSource.class);
+		Assert.assertEquals("false", cliOptionSource.valueForOption("j"));
+		Assert.assertEquals("false", cliOptionSource.valueForOption("jonny"));
 
 	}
 
