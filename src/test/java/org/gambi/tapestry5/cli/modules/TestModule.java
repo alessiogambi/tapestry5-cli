@@ -6,8 +6,14 @@ import org.gambi.tapestry5.cli.data.BeanA;
 import org.gambi.tapestry5.cli.data.BeanFOO;
 import org.gambi.tapestry5.cli.data.BeanWithURL;
 import org.gambi.tapestry5.cli.data.CLIOption;
+import org.gambi.tapestry5.cli.utils.CLISymbolConstants;
 
 public class TestModule {
+
+	public void contributeApplicationDefaults(
+			MappedConfiguration<String, String> symbols) {
+		symbols.add(CLISymbolConstants.COMMAND_NAME, "test");
+	}
 
 	/**
 	 * Define some sample contributions

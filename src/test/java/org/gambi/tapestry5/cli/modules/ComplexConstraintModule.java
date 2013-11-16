@@ -4,8 +4,14 @@ import org.apache.tapestry5.ioc.Configuration;
 import org.apache.tapestry5.ioc.MappedConfiguration;
 import org.gambi.tapestry5.cli.data.CLIOption;
 import org.gambi.tapestry5.cli.data.NestedBean;
+import org.gambi.tapestry5.cli.utils.CLISymbolConstants;
 
 public class ComplexConstraintModule {
+
+	public static void contributeApplicationDefaults(
+			MappedConfiguration<String, String> defaults) {
+		defaults.add(CLISymbolConstants.COMMAND_NAME, "complexTest");
+	}
 
 	/**
 	 * Note that those options are used with the one specified inside
