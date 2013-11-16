@@ -6,15 +6,24 @@ import java.util.List;
 
 import javax.validation.Validator;
 
+import org.apache.tapestry5.ioc.ObjectProvider;
+import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
+import org.apache.tapestry5.ioc.annotations.Contribute;
 import org.apache.tapestry5.ioc.annotations.SubModule;
 import org.apache.tapestry5.ioc.annotations.Symbol;
+import org.apache.tapestry5.ioc.services.Builtin;
+import org.apache.tapestry5.ioc.services.MasterObjectProvider;
 import org.apache.tapestry5.ioc.services.PipelineBuilder;
 import org.gambi.tapestry5.cli.data.CLIOption;
+import org.gambi.tapestry5.cli.internal.services.CLIObjectProvider;
+import org.gambi.tapestry5.cli.internal.services.InputObjectProvider;
 import org.gambi.tapestry5.cli.modules.AdditionalCoercions;
+import org.gambi.tapestry5.cli.services.CLIOptionSource;
 import org.gambi.tapestry5.cli.services.CLIParser;
 import org.gambi.tapestry5.cli.services.CLIValidator;
 import org.gambi.tapestry5.cli.services.CLIValidatorFilter;
+import org.gambi.tapestry5.cli.services.impl.CLIOptionSourceImpl;
 import org.gambi.tapestry5.cli.services.impl.CLIParserImpl;
 import org.gambi.tapestry5.cli.services.impl.CLIValidatorFilterImpl;
 import org.gambi.tapestry5.cli.services.impl.DefaullCLIValidatorFilter;
@@ -67,9 +76,17 @@ public class CLIModule {
 	 * 
 	 * @category AutoBuild ApplicationConfigurationSource
 	 */
+	@SuppressWarnings("unchecked")
 	public static void bind(final ServiceBinder binder) {
 		binder.bind(ApplicationConfigurationSource.class,
 				ApplicationConfigurationSourceImpl.class);
+
+		/*
+		 * Note that we MUST mark this with the Builtin annotation
+		 */
+		binder.bind(CLIOptionSource.class, CLIOptionSourceImpl.class)
+				.withMarker(Builtin.class);
+
 	}
 
 	/**
@@ -129,7 +146,17 @@ public class CLIModule {
 	 */
 	Logger logger,
 	/**
-	 * @category Service TapestryIOCModule
+	 * Add the CLIOption and CLIInput annotation provider. This code is taken
+	 * from {@link TapestryIOCModule}.
+	 * 
+	 * <dl>
+	 * <dt>CLIOption</dt>
+	 * <dd>Supports the {@link org.gambi.tapestry5.cli.annotations.CLIOption}
+	 * annotations</dd>
+	 * <dt>CLIInput</dt>
+	 * <dd>Supports the {@link org.gambi.tapestry5.cli.annotations.CLIInput}
+	 * annotations</dd>
+	 * </dl>
 	 */
 	PipelineBuilder pipe,
 	/**
@@ -151,5 +178,23 @@ public class CLIModule {
 
 		return pipe.build(logger, CLIValidator.class, CLIValidatorFilter.class,
 				filters);
+	}
+
+	/**
+	 * Contribute the CLIOption/CLIInput injection services
+	 * 
+	 * @param configuration
+	 * 
+	 * @category UserContributions MasterObjectProvider
+	 */
+	@Contribute(MasterObjectProvider.class)
+	public static void setupObjectProviders(
+			OrderedConfiguration<ObjectProvider> configuration) {
+
+		configuration.addInstance("CLIOption", CLIObjectProvider.class,
+				"before:AnnotationBasedContributions");
+
+		configuration.addInstance("CLIInput", InputObjectProvider.class,
+				"before:AnnotationBasedContributions");
 	}
 }
