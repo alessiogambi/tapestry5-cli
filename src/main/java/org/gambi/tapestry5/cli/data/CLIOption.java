@@ -72,12 +72,19 @@ public class CLIOption {
 				&& this.longOpt.equals(anotherOption.longOpt)
 				&& this.nArgs != anotherOption.nArgs) {
 			return true;
-		} else if (this.getDefaultValue() != null
+		} else if (this.shortOpt.equals(anotherOption.shortOpt)
+				&& this.longOpt.equals(anotherOption.longOpt)
+				&& this.nArgs == anotherOption.nArgs
+				&& this.getDefaultValue() != null
 				&& anotherOption.getDefaultValue() != null
 				&& !this.getDefaultValue().equals(
 						anotherOption.getDefaultValue())) {
 			return true;
-		} else if (this.getDefaultValues() != null
+		} else if (
+				this.shortOpt.equals(anotherOption.shortOpt)
+				&& this.longOpt.equals(anotherOption.longOpt)
+				&& this.nArgs == anotherOption.nArgs
+				&& this.getDefaultValues() != null
 				&& anotherOption.getDefaultValues() != null
 				&& !Arrays.equals(this.getDefaultValues(),
 						anotherOption.getDefaultValues())) {

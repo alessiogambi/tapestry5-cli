@@ -28,10 +28,15 @@ public @interface CLIOption {
 	/**
 	 * The name of the option to inject.
 	 */
-	String name();
+	String name() default "";
 
 	/**
 	 * The long name of the option to inject.
 	 */
-	String longName();
+	String longName() default "";
+
+	/*
+	 * TODO: How to force either one or the other value but not both, nor both
+	 * optional ?!
+	 */
 }
