@@ -6,6 +6,9 @@ import java.util.List;
 
 import javax.validation.Validator;
 
+import org.apache.tapestry5.beanvalidator.BeanValidatorConfigurer;
+import org.apache.tapestry5.beanvalidator.BeanValidatorSource;
+import org.apache.tapestry5.ioc.ObjectLocator;
 import org.apache.tapestry5.ioc.ObjectProvider;
 import org.apache.tapestry5.ioc.OrderedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
@@ -27,6 +30,7 @@ import org.gambi.tapestry5.cli.services.impl.CLIOptionSourceImpl;
 import org.gambi.tapestry5.cli.services.impl.CLIParserImpl;
 import org.gambi.tapestry5.cli.services.impl.CLIValidatorFilterImpl;
 import org.gambi.tapestry5.cli.services.impl.DefaullCLIValidatorFilter;
+import org.gambi.tapestry5.cli.services.impl.TapestryConstraintValidatorFactory;
 import org.gambi.tapestry5.cli.services.internal.ApplicationConfigurationSource;
 import org.gambi.tapestry5.cli.services.internal.BridgeCLIOptionProvider;
 import org.gambi.tapestry5.cli.services.internal.CLIInputObjectProvider;
@@ -221,6 +225,42 @@ public class CLIModule {
 		providers.add("Bridge", bridgeCLIOptionProvider, "");
 	}
 
+	/**
+	 * Contribute the simple validation with tapestry5 enabled validators. this
+	 * solution is taken from:
+	 * http://tawus.wordpress.com/2011/05/12/tapestry-magic
+	 * -12-tapestry-ioc-aware-jsr-303-custom-validators/
+	 * 
+	 * @param locator
+	 * @param threadLocale
+	 * @param configuration
+	 * 
+	 * @category UserContributions BeanValidatorSource
+	 */
+	@Contribute(BeanValidatorSource.class)
+	public static void contributeBeanValidatorSource(
+			final OrderedConfiguration<BeanValidatorConfigurer> configuration,
+			final ObjectLocator locator) {
+
+		configuration.add("TapestryEnabledValidationConstraints",
+				new BeanValidatorConfigurer() {
+					public void configure(
+							javax.validation.Configuration<?> configuration) {
+						configuration
+								.constraintValidatorFactory(new TapestryConstraintValidatorFactory(
+										locator));
+					}
+				});
+	}
+
+	/**
+	 * Build the internal service that acts as bridge to carry around validated
+	 * input
+	 * 
+	 * @return
+	 * 
+	 * @category Build BridgeCLIOptionProvider
+	 */
 	public BridgeCLIOptionProvider build() {
 		return new BridgeCLIOptionProviderImpl();
 	}
