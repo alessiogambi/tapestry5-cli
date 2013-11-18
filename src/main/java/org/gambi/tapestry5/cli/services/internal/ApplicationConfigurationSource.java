@@ -1,7 +1,10 @@
 package org.gambi.tapestry5.cli.services.internal;
 
-import org.apache.commons.cli.CommandLine;
+import java.util.Collection;
+import java.util.List;
+
 import org.gambi.tapestry5.cli.data.ApplicationConfiguration;
+import org.gambi.tapestry5.cli.data.CLIOption;
 
 /**
  * This is the service that instantiate user's provided beans and set the value
@@ -20,8 +23,10 @@ public interface ApplicationConfigurationSource {
 	 * of the parsing
 	 * 
 	 * @param parsedOptions
+	 * @param parsedInputs
 	 * @return
 	 */
-	public ApplicationConfiguration get(CommandLine parsedOptions);
+	public ApplicationConfiguration get(Collection<CLIOption> parsedOptions,
+			List<String> parsedInputs);
 
 }
