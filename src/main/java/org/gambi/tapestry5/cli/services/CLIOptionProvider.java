@@ -4,6 +4,8 @@ public interface CLIOptionProvider {
 
 	public String valueForOption(String optionName);
 
+	public String[] valuesForOption(String optionName);
+
 	public String valueForInput(int position);
 
 }

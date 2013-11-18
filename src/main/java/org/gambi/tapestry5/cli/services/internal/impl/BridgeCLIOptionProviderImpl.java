@@ -11,6 +11,8 @@ import org.gambi.tapestry5.cli.services.internal.BridgeCLIOptionProvider;
 public class BridgeCLIOptionProviderImpl implements BridgeCLIOptionProvider {
 
 	private List<String> inputs;
+	// TODO: if values are stored inside options why do we need a MAP ? can we
+	// just use a collection of CLIOptions?
 	private Map<CLIOption, String> options;
 
 	public BridgeCLIOptionProviderImpl() {
@@ -32,9 +34,22 @@ public class BridgeCLIOptionProviderImpl implements BridgeCLIOptionProvider {
 			for (CLIOption cliOption : options.keySet()) {
 				if (cliOption.getShortOpt().equals(optionName)
 						|| cliOption.getLongOpt().equals(optionName)) {
-					// Option found !
+					return cliOption.getValue();
+				}
+			}
+			return null;
+		} catch (Throwable e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 
-					return options.get(cliOption);
+	public String[] valuesForOption(String optionName) {
+		try {
+			for (CLIOption cliOption : options.keySet()) {
+				if (cliOption.getShortOpt().equals(optionName)
+						|| cliOption.getLongOpt().equals(optionName)) {
+					return cliOption.getValues();
 				}
 			}
 			return null;

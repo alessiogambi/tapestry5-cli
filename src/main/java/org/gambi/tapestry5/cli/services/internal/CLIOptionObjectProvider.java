@@ -20,8 +20,7 @@ public class CLIOptionObjectProvider implements ObjectProvider {
 
 	private final TypeCoercer typeCoercer;
 
-	public CLIOptionObjectProvider(
-			@Builtin CLIOptionSource optionSource,
+	public CLIOptionObjectProvider(@Builtin CLIOptionSource optionSource,
 			@Builtin TypeCoercer typeCoercer) {
 		this.optionSource = optionSource;
 		this.typeCoercer = typeCoercer;
@@ -37,10 +36,9 @@ public class CLIOptionObjectProvider implements ObjectProvider {
 		}
 
 		Object value = null;
-		if (annotation.name() != null) {
-
+		if (!annotation.name().equals("")) {
 			value = optionSource.valueForOption(annotation.name());
-		} else if (annotation.longName() != null) {
+		} else if (!annotation.longName().equals("")) {
 			value = optionSource.valueForOption(annotation.longName());
 		} else {
 			throw new RuntimeException(

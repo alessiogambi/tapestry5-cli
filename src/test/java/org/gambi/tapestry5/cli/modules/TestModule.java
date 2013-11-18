@@ -1,5 +1,9 @@
 package org.gambi.tapestry5.cli.modules;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+
 import org.apache.tapestry5.ioc.Configuration;
 import org.apache.tapestry5.ioc.MappedConfiguration;
 import org.gambi.tapestry5.cli.data.BeanA;
@@ -27,6 +31,19 @@ public class TestModule {
 				"beta-description"));
 		configuration
 				.add(new CLIOption("g", "gamma", 1, false, "This is gamma"));
+
+		configuration.add(new CLIOption("v", "a-vector-options", 5, false,
+				"This is vector"));
+
+		configuration.add(new CLIOption("u", "the-url", 1, true, "Mandatory"));
+
+		CLIOption delta = new CLIOption("d", "delta", 1, false, "Mandatory");
+		delta.setDefaultValue("3");
+		configuration.add(delta);
+
+		CLIOption epsilon = new CLIOption("e", "epsilon", 1, false, "Mandatory");
+		epsilon.setDefaultValue("12");
+		configuration.add(epsilon);
 	}
 
 	public void contributeApplicationConfigurationSource(
