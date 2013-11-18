@@ -80,8 +80,7 @@ public class CLIOption {
 				&& !this.getDefaultValue().equals(
 						anotherOption.getDefaultValue())) {
 			return true;
-		} else if (
-				this.shortOpt.equals(anotherOption.shortOpt)
+		} else if (this.shortOpt.equals(anotherOption.shortOpt)
 				&& this.longOpt.equals(anotherOption.longOpt)
 				&& this.nArgs == anotherOption.nArgs
 				&& this.getDefaultValues() != null
@@ -248,7 +247,7 @@ public class CLIOption {
 	public String getValue() {
 		if (values == null) {
 			return null;
-		} else if (values.length > 0) {
+		} else if (values.length == 1) {
 			return values[0];
 		} else {
 			return null;
@@ -260,6 +259,12 @@ public class CLIOption {
 	}
 
 	public String[] getValues() {
-		return values;
+		if (values == null) {
+			return null;
+		} else if (values.length > 1) {
+			return values;
+		} else {
+			return null;
+		}
 	}
 }

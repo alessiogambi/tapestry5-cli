@@ -238,6 +238,8 @@ public class CLIParserImpl implements CLIParser {
 		// Parse the input line
 		parsedOptions = parser.parse(options, args);
 
+		List<String> parsedInputs = parsedOptions.getArgList();
+
 		for (CLIOption cliOption : cliOptions) {
 			logger.debug("Processing " + cliOption.toString());
 
@@ -294,7 +296,7 @@ public class CLIParserImpl implements CLIParser {
 
 		}
 
-		return applicationConfigurationSource.get(parsedOptions);
+		return applicationConfigurationSource.get(cliOptions, parsedInputs);
 	}
 
 	private void validate(ApplicationConfiguration applicationConfiguration)

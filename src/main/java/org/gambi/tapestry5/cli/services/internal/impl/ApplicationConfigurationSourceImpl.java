@@ -58,6 +58,14 @@ public class ApplicationConfigurationSourceImpl implements
 		return sb.toString();
 	}
 
+	/**
+	 * This is the method that encodes the Naming Convention to match options'
+	 * name and bean properties
+	 * 
+	 * @param parsedOptions
+	 * @param propertyName
+	 * @return
+	 */
 	private CLIOption findOption(Collection<CLIOption> parsedOptions,
 			String propertyName) {
 		for (CLIOption option : parsedOptions) {
@@ -67,12 +75,35 @@ public class ApplicationConfigurationSourceImpl implements
 			}
 		}
 		return null;
+	}
 
+	private int findInput(List<String> parsedInputs, String propertyName) {
+		int inputPosition = -1;
+		// Extract the position from propertyName input_<pos>. pos must be an
+		// integer from 0 to n;
+		if (propertyName.startsWith("input_")) {
+			try {
+				inputPosition = Integer.parseInt(propertyName.split("_")[1]);
+			} catch (Throwable e) {
+				e.printStackTrace();
+				return -1;
+			}
+		}
+
+		if (parsedInputs.size() < inputPosition) {
+			return inputPosition;
+		} else {
+			return -1;
+		}
 	}
 
 	private boolean optionPresent(Collection<CLIOption> parsedOptions,
 			String propertyName) {
 		return findOption(parsedOptions, propertyName) != null;
+	}
+
+	private boolean inputPresent(List<String> parsedInputs, String propertyName) {
+		return findInput(parsedInputs, propertyName) != -1;
 	}
 
 	private void assignOption(Collection<CLIOption> parsedOptions,
@@ -91,6 +122,8 @@ public class ApplicationConfigurationSourceImpl implements
 			NoSuchMethodException {
 
 		if (option == null) {
+			return;
+		} else if (option.getValue() == null && option.getValues() == null) {
 			return;
 		}
 
@@ -137,6 +170,41 @@ public class ApplicationConfigurationSourceImpl implements
 				+ PropertyUtils.getProperty(bean, propertyName));
 	}
 
+	private void assignInput(List<String> parsedInputs, String propertyName,
+			Object bean) throws IllegalAccessException,
+			InvocationTargetException, NoSuchMethodException {
+
+		int inputPosition = findInput(parsedInputs, propertyName);
+
+		if (inputPosition != -1) {
+			assignInput(parsedInputs.get(inputPosition), propertyName, bean);
+		}
+	}
+
+	private void assignInput(String input, String propertyName, Object bean)
+			throws IllegalAccessException, InvocationTargetException,
+			NoSuchMethodException {
+
+		if (input == null) {
+			return;
+		}
+
+		PropertyDescriptor descriptor = PropertyUtils.getPropertyDescriptor(
+				bean, propertyName);
+
+		logger.debug("Assign values " + input + " to " + propertyName
+				+ " for bean " + bean.getClass());
+
+		logger.debug("\n\nCoercing " + input + " to "
+				+ descriptor.getPropertyType().getCanonicalName());
+		Object value = typeCoercer.coerce(input, descriptor.getPropertyType());
+
+		PropertyUtils.setProperty(bean, propertyName, value);
+
+		logger.debug(propertyName + "  "
+				+ PropertyUtils.getProperty(bean, propertyName));
+	}
+
 	// This is a recursive call !
 	private void evaluateTheBean(Collection<CLIOption> parsedOptions,
 			List<String> parsedInputs, Object bean)
@@ -159,7 +227,13 @@ public class ApplicationConfigurationSourceImpl implements
 				// logger.debug("The bean property (" + propertyName
 				// + ") was specified as input");
 				assignOption(parsedOptions, propertyName, bean);
-			} else {
+			} else if (inputPresent(parsedInputs, propertyName)) {
+				// logger.debug("The bean property (" + propertyName
+				// + ") was specified as input");
+				assignInput(parsedInputs, propertyName, bean);
+			}
+
+			else {
 				logger.debug("The property (" + propertyName
 						+ ") was not specified on the command line.");
 
