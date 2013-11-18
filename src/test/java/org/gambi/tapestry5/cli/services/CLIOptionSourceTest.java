@@ -38,7 +38,7 @@ public class CLIOptionSourceTest {
 	}
 
 	@Test
-	public void vectorOptions() {
+	public void options() {
 		try {
 			// Build the registry: note this will not cause an exception because
 			// we need to instantiate the parser first
@@ -47,8 +47,8 @@ public class CLIOptionSourceTest {
 
 			CLIParser parser = registry.getService(CLIParser.class);
 			String[] args = new String[] { "-u", "file:///tmp", "-a", "14",
-					"--beta", "17", "-g", "", "-v", "1", "2", "3", "first-arg",
-					"second-args", "whaterver" };
+					"--beta", "-g", "", "-v", "1", "2", "3", "first-arg",
+					"second-args", "whaterver", "17" };
 
 			parser.parse(args);
 		} catch (Exception e) {
@@ -59,16 +59,44 @@ public class CLIOptionSourceTest {
 		CLIOptionSource optionSource = registry
 				.getService(CLIOptionSource.class);
 
-		Assert.assertEquals("1", optionSource.valueForOption("a"));
-		Assert.assertEquals("7", optionSource.valueForOption("beta"));
-		Assert.assertEquals("1", optionSource.valueForOption("gamnma"));
+		Assert.assertEquals("14", optionSource.valueForOption("a"));
+		Assert.assertEquals("true", optionSource.valueForOption("beta"));
+		Assert.assertEquals("", optionSource.valueForOption("gamma"));
 		Assert.assertNull(optionSource.valueForOption("v"));
 
-		Assert.assertNull("1", optionSource.valuesForOption("a"));
-		Assert.assertNull("7", optionSource.valuesForOption("beta"));
-		Assert.assertNull("1", optionSource.valuesForOption("gamnma"));
-		Assert.assertTrue(Arrays.equals(new String[] {},
-				optionSource.valuesForOption("v")));
+		Assert.assertNull(optionSource.valuesForOption("a"));
+		Assert.assertNull(optionSource.valuesForOption("beta"));
+		Assert.assertNull(optionSource.valuesForOption("gamma"));
+		Assert.assertNotNull(optionSource.valuesForOption("v"));
+	}
+
+	@Test
+	public void vectorOptions() {
+		try {
+			// Build the registry: note this will not cause an exception because
+			// we need to instantiate the parser first
+			registry = builder.build();
+			registry.performRegistryStartup();
+
+			CLIParser parser = registry.getService(CLIParser.class);
+			String[] args = new String[] { "-u", "file:///tmp", "-a", "14",
+					"--beta", "-g", "", "-v", "1", "2", "3", "first-arg",
+					"second-args", "whaterver", "17" };
+
+			parser.parse(args);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail("Exception raised !");
+		}
+
+		CLIOptionSource optionSource = registry
+				.getService(CLIOptionSource.class);
+
+		System.out.println("CLIOptionSourceTest.vectorOptions()"
+				+ Arrays.toString(optionSource.valuesForOption("v")));
+
+		Assert.assertTrue(Arrays.equals(new String[] { "1", "2", "3",
+				"first-arg", "second-args" }, optionSource.valuesForOption("v")));
 
 	}
 }

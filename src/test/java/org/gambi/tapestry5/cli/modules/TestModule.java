@@ -31,7 +31,7 @@ public class TestModule {
 		configuration.add(new CLIOption("v", "a-vector-options", 5, false,
 				"This is vector"));
 
-		configuration.add(new CLIOption("u", "the-url", 1, true, "Mandatory"));
+		configuration.add(new CLIOption("u", "the-URL", 1, true, "Mandatory"));
 
 		CLIOption delta = new CLIOption("d", "delta", 1, false, "");
 		delta.setDefaultValue("3");
