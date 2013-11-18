@@ -22,6 +22,15 @@ public class CLIOptionSourceImpl implements CLIOptionSource {
 		return null;
 	}
 
+	public String[] valuesForOption(String optionName) {
+		for (CLIOptionProvider provider : providers) {
+			if (provider.valuesForOption(optionName) != null) {
+				return provider.valuesForOption(optionName);
+			}
+		}
+		return null;
+	}
+
 	public String valueForInput(int inputPosition) {
 		for (CLIOptionProvider provider : providers) {
 			if (provider.valueForInput(inputPosition) != null) {

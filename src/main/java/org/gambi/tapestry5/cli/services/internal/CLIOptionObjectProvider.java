@@ -32,8 +32,6 @@ public class CLIOptionObjectProvider implements ObjectProvider {
 				.getAnnotation(CLIOption.class);
 
 		if (annotation == null) {
-			System.out
-					.println("CLIOptionObjectProvider.provide() null annotation");
 			return null;
 		}
 
@@ -53,9 +51,6 @@ public class CLIOptionObjectProvider implements ObjectProvider {
 		if (it != null) {
 			value = typeCoercer.coerce(value, it.value());
 		}
-
-		System.out.println("CLIOptionObjectProvider.provide() Coercing"
-				+ value.getClass() + " to " + objectType);
 
 		return typeCoercer.coerce(value, objectType);
 	}

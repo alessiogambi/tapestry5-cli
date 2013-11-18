@@ -34,13 +34,22 @@ public class BridgeCLIOptionProviderImpl implements BridgeCLIOptionProvider {
 			for (CLIOption cliOption : options.keySet()) {
 				if (cliOption.getShortOpt().equals(optionName)
 						|| cliOption.getLongOpt().equals(optionName)) {
-					// Option found !
-					System.out
-							.println("BridgeCLIOptionProviderImpl.valueForOption() Option found "
-									+ optionName
-									+ " value "
-									+ cliOption.getValue());
 					return cliOption.getValue();
+				}
+			}
+			return null;
+		} catch (Throwable e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public String[] valuesForOption(String optionName) {
+		try {
+			for (CLIOption cliOption : options.keySet()) {
+				if (cliOption.getShortOpt().equals(optionName)
+						|| cliOption.getLongOpt().equals(optionName)) {
+					return cliOption.getValues();
 				}
 			}
 			return null;
