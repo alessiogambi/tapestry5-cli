@@ -1,9 +1,5 @@
 package org.gambi.tapestry5.cli.modules;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-
 import org.apache.tapestry5.ioc.Configuration;
 import org.apache.tapestry5.ioc.MappedConfiguration;
 import org.gambi.tapestry5.cli.data.BeanA;
@@ -37,11 +33,11 @@ public class TestModule {
 
 		configuration.add(new CLIOption("u", "the-url", 1, true, "Mandatory"));
 
-		CLIOption delta = new CLIOption("d", "delta", 1, false, "Mandatory");
+		CLIOption delta = new CLIOption("d", "delta", 1, false, "");
 		delta.setDefaultValue("3");
 		configuration.add(delta);
 
-		CLIOption epsilon = new CLIOption("e", "epsilon", 1, false, "Mandatory");
+		CLIOption epsilon = new CLIOption("e", "epsilon", 1, false, "");
 		epsilon.setDefaultValue("12");
 		configuration.add(epsilon);
 	}

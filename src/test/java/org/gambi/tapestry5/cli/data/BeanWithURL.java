@@ -6,8 +6,8 @@ import org.gambi.tapestry5.cli.annotations.ValidURL;
 
 public class BeanWithURL {
 
-	@NotNull
-	@ValidURL
+	@NotNull(message = "The URL cannot be null")
+	@ValidURL(message = "The URL must be valid")
 	private String theURL;
 
 	public BeanWithURL() {

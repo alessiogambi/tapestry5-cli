@@ -6,17 +6,17 @@ import javax.validation.constraints.Size;
 
 public class BeanA {
 
-	@NotNull
-	@Min(value = 1)
+	@NotNull(message = "Delta cannot be NULL")
+	@Min(value = 1, message = "Delta Must be > 1")
 	private Integer delta;
 
-	@Min(value = 10)
+	@Min(value = 10, message = "epsilon must be > 10")
 	private long epsilon;
 
 	@Size(min = 3, max = 5, message = "Legnth of beta Must be between 3 and 5")
 	private String beta;
 
-	@NotNull
+	@NotNull(message = "Gamma cannot be NULL")
 	private String gamma;
 
 	public BeanA() {
