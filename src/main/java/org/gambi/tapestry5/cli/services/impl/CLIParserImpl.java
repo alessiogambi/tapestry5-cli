@@ -259,8 +259,7 @@ public class CLIParserImpl implements CLIParser {
 				logger.debug("Done Option" + cliOption.toString());
 			} else {
 				// Set default values if any
-				logger.debug(String.format(
-						"CLIOption %s is not set. Force default values if any",
+				logger.debug(String.format("CLIOption %s is not set.",
 						cliOption.toString()));
 				if (cliOption.getnArgs() == 0) {
 					// FLAG Options have default value to false. They become
@@ -271,9 +270,24 @@ public class CLIParserImpl implements CLIParser {
 					cliOption.setValue("false");
 				} else {
 					if (cliOption.getnArgs() == 1) {
+						logger.debug(String.format(
+								"Force default value %s for Option %s",
+								cliOption.getDefaultValue(),
+								cliOption.toString()));
+
 						cliOption.setValue(cliOption.getDefaultValue());
+
+						logger.debug("The value now is " + cliOption.getValue());
 					} else if (cliOption.getnArgs() > 1) {
+
+						logger.debug("Force default values %s for Option %s",
+								Arrays.toString(cliOption.getDefaultValues()),
+								cliOption.toString());
+
 						cliOption.setValues(cliOption.getDefaultValues());
+
+						logger.debug("The values now are "
+								+ Arrays.toString(cliOption.getValues()));
 					}
 				}
 			}
