@@ -60,16 +60,7 @@ import org.slf4j.Logger;
  * The input arguments are parsed, then validated, and eventually "exported" as
  * symbols to be used inside the application.
  * 
- * Input arguments are exported as symbols with the following convention for
- * their names: <br/>
- * <b>args:inputs:<<n>></b><br/>
- * where <<n>> stands for the position, of the input (starting form 0)
- * 
- * Command line options are exported as symbols with the following convention
- * for their name: <br/>
- * <b>args:<<long-name-option>></b><br/>
- * where <<long-name-option>> is the parameter specified in the configuration.
- * We adopt this solution because symbol names are case insensitive.
+ * Inputs and Options are exported via the CLIOptionSource service
  * 
  * @author alessiogambi
  * 
